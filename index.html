@@ -1,0 +1,2412 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>段考三步引導自主訂正思維導航系統</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & Noto Sans TC -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f7ff',
+              100: '#e0effe',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#075985',
+              800: '#0c4a6e',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .custom-shadow {
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
+    }
+    @keyframes pulse-subtle {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    .animate-subtle {
+      animation: pulse-subtle 2s infinite ease-in-out;
+    }
+    /* iOS Safari Dynamic Viewport Support */
+    .app-height {
+      height: 100vh;
+      height: 100dvh;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased app-height flex flex-col overflow-hidden">
+
+  <!-- ================= TOP NAVBAR ================= -->
+  <header class="bg-white border-b border-slate-200 shrink-0 z-20">
+    <div class="px-3 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between gap-2">
+      <div class="flex items-center space-x-2 sm:space-x-3 min-w-0">
+        <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-tr from-sky-600 to-indigo-600 text-white flex items-center justify-center font-bold shadow-md shadow-sky-100 shrink-0">
+          <i class="fa-solid fa-compass text-lg sm:text-xl"></i>
+        </div>
+        <div class="min-w-0">
+          <div class="flex items-center space-x-1.5 sm:space-x-2">
+            <h1 class="text-base sm:text-xl font-bold text-slate-800 leading-tight truncate">段考三步引導自主訂正思維導航</h1>
+            <span class="hidden md:inline-block px-2.5 py-0.5 text-xs sm:text-sm font-semibold bg-sky-100 text-sky-800 rounded-md">Canvas 數位自主訂正版</span>
+          </div>
+          <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs sm:text-sm text-slate-500 mt-0.5">
+            <span class="hidden sm:inline">臺北市立大同高級中學 115學年度第一學期 高二英文科第一次期中考</span>
+            <span class="hidden sm:inline text-slate-300">|</span>
+            <span class="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 text-xs font-medium shadow-2xs">
+              <i class="fa-solid fa-feather-pointed text-sky-600 text-xs"></i>
+              此月考訂正引導由劉郁芬老師與 Gemini AI 協作
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action items & Progress badge -->
+      <div class="flex items-center space-x-1.5 sm:space-x-3 shrink-0">
+        <div class="bg-slate-100 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg flex items-center space-x-1.5 text-xs sm:text-sm font-medium text-slate-700">
+          <i class="fa-solid fa-list-check text-sky-600 text-sm sm:text-base"></i>
+          <span class="hidden sm:inline">訂正進度:</span>
+          <strong id="progress-stat" class="text-sky-600 font-bold text-xs sm:text-base">0 / 90</strong>
+        </div>
+        <button id="toggle-info-btn" class="p-1.5 sm:p-2 text-slate-500 hover:text-sky-600 hover:bg-slate-100 rounded-lg transition" title="使用說明">
+          <i class="fa-solid fa-circle-question text-lg sm:text-xl"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Category selector tabs -->
+    <div class="px-3 sm:px-4 py-1.5 sm:py-2 bg-slate-100 border-t border-slate-200 flex items-center space-x-1.5 sm:space-x-2 overflow-x-auto text-xs sm:text-sm font-medium select-none no-scrollbar">
+      <span class="text-slate-500 shrink-0 mr-1 text-xs sm:text-sm"><i class="fa-solid fa-layer-group"></i> 分區:</span>
+      <button class="cat-btn px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md bg-white text-sky-700 shadow-sm border border-slate-200 shrink-0 font-bold text-xs sm:text-sm" data-cat="all">全部 (90)</button>
+      <button class="cat-btn px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md text-slate-600 hover:bg-white hover:text-sky-600 shrink-0 text-xs sm:text-sm" data-cat="listen">I. 聽力與對話 (1-6)</button>
+      <button class="cat-btn px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md text-slate-600 hover:bg-white hover:text-sky-600 shrink-0 text-xs sm:text-sm" data-cat="vocab_gram">I. 詞彙與語法 (7-18)</button>
+      <button class="cat-btn px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md text-slate-600 hover:bg-white hover:text-sky-600 shrink-0 text-xs sm:text-sm" data-cat="cloze">I. 綜合測驗 (19-52)</button>
+      <button class="cat-btn px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md text-slate-600 hover:bg-white hover:text-sky-600 shrink-0 text-xs sm:text-sm" data-cat="blank">I. 文意選填 (53-62)</button>
+      <button class="cat-btn px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md text-slate-600 hover:bg-white hover:text-sky-600 shrink-0 text-xs sm:text-sm" data-cat="read">I. 篇章結構與閱讀 (63-70)</button>
+      <button class="cat-btn px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md text-slate-600 hover:bg-white hover:text-sky-600 shrink-0 text-xs sm:text-sm" data-cat="part2_vocab">II. 文意字彙 (1-8)</button>
+      <button class="cat-btn px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md text-slate-600 hover:bg-white hover:text-sky-600 shrink-0 text-xs sm:text-sm" data-cat="part2_trans">II. 翻譯填空 (9-20)</button>
+    </div>
+
+    <!-- Question numbers horizontal carousel / button bar -->
+    <div id="questions-nav-bar" class="px-3 sm:px-4 py-1.5 sm:py-2 border-t border-slate-200 flex items-center space-x-1.5 overflow-x-auto bg-white select-none">
+      <!-- Generated dynamically -->
+    </div>
+
+    <!-- MOBILE-ONLY SWITCHER TABS (手機專屬雙頁籤：解決螢幕過小與鍵盤遮蔽問題) -->
+    <div class="lg:hidden px-3 py-1.5 bg-sky-50/70 border-t border-sky-100 flex items-center justify-between text-xs sm:text-sm">
+      <div class="grid grid-cols-2 gap-2 w-full">
+        <button id="mobile-tab-nav" class="flex items-center justify-center space-x-1.5 py-1.5 rounded-lg bg-white text-sky-700 font-bold border border-sky-200 shadow-xs transition">
+          <i class="fa-solid fa-book-open"></i>
+          <span>1. 審題與問句</span>
+        </button>
+        <button id="mobile-tab-chat" class="flex items-center justify-center space-x-1.5 py-1.5 rounded-lg bg-slate-100 text-slate-600 font-medium hover:bg-white transition relative">
+          <i class="fa-solid fa-robot text-sky-600"></i>
+          <span>2. AI 訂正教練</span>
+          <span id="mobile-chat-dot" class="w-2 h-2 rounded-full bg-emerald-500 absolute top-1 right-2 animate-ping"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MAIN WORKSPACE (RESPONSIVE 2-PANEL / MOBILE TABBED) ================= -->
+  <main class="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden p-2 sm:p-3 gap-2 sm:gap-3 relative">
+    
+    <!-- LEFT CARD: 思維導航儀 (Thinking Navigator) -->
+    <section id="panel-navigator" class="w-full lg:w-1/2 flex flex-col bg-white rounded-xl sm:rounded-2xl border border-slate-200 custom-shadow overflow-hidden transition-all duration-200 flex-1 lg:flex-initial">
+      <!-- Card Header -->
+      <div class="px-3.5 sm:px-5 py-2.5 sm:py-3.5 bg-gradient-to-r from-slate-50 to-sky-50/50 border-b border-slate-200 flex items-center justify-between shrink-0">
+        <div class="flex items-center space-x-2.5 sm:space-x-3">
+          <span class="inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-sky-600 text-white font-bold text-sm sm:text-base shadow-sm shrink-0" id="badge-qnum">
+            1
+          </span>
+          <div>
+            <div class="flex items-center space-x-1.5 sm:space-x-2">
+              <h2 class="font-bold text-slate-800 text-base sm:text-lg" id="q-title">第 1 題</h2>
+              <span id="q-category-tag" class="text-xs sm:text-sm px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full font-medium">Part I. 選擇題</span>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500 truncate max-w-[200px] sm:max-w-none">搭配桌上紙本考卷與圖表進行三步審題思考</p>
+          </div>
+        </div>
+
+        <!-- Correct answer tag -->
+        <div class="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
+          <div class="text-right">
+            <span class="text-[10px] sm:text-xs text-slate-400 block font-semibold leading-none mb-0.5">參考正解</span>
+            <span id="q-answer-display" class="font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 sm:px-3 py-0.5 sm:py-1 rounded-md text-sm sm:text-lg">
+              (D)
+            </span>
+          </div>
+          <button id="mark-done-btn" class="p-1 sm:p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition" title="標記本題為已完成">
+            <i class="fa-regular fa-circle-check text-xl sm:text-2xl"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Card Content: 3-Step Navigator (Scrollable) -->
+      <div class="flex-1 overflow-y-auto p-3.5 sm:p-5 space-y-3 sm:space-y-4">
+        
+        <!-- STEP 1: 破題關鍵字與審題指引 -->
+        <div class="rounded-xl border border-sky-100 bg-gradient-to-b from-sky-50/60 to-transparent p-3 sm:p-4">
+          <div class="flex items-center space-x-2 text-sky-800 font-bold text-sm sm:text-base mb-2">
+            <span class="w-5 h-5 sm:w-6 sm:h-6 rounded-md bg-sky-600 text-white flex items-center justify-center text-xs">1</span>
+            <h3>第一步・破題關鍵字與審題指引</h3>
+          </div>
+
+          <div class="space-y-2.5 sm:space-y-3">
+            <div>
+              <span class="text-xs sm:text-sm font-semibold text-slate-600 block mb-1">核心關鍵字詞：</span>
+              <div id="q-keywords-container" class="flex flex-wrap gap-1.5 sm:gap-2">
+                <!-- Keywords badges -->
+              </div>
+            </div>
+
+            <!-- Paper exam visual guidance alert box -->
+            <div id="q-visual-guidance-box" class="bg-amber-50/90 border border-amber-200 text-amber-900 rounded-lg p-2.5 sm:p-3.5 text-xs sm:text-base leading-relaxed flex items-start space-x-2">
+              <i class="fa-solid fa-book-open text-amber-600 mt-0.5 shrink-0 text-sm sm:text-base"></i>
+              <div class="flex-1">
+                <span class="font-bold text-amber-800">【看圖/審題指引】：</span>
+                <span id="q-visual-text">請對照紙本考卷第 1 頁第 1 題圖片...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: 核心概念與公式 (預設折疊 / 點擊展開) -->
+        <div class="rounded-xl border border-indigo-100 bg-indigo-50/30 overflow-hidden transition-all duration-200">
+          <button id="toggle-step2-btn" class="w-full px-3 sm:px-4 py-2.5 sm:py-3.5 text-left flex items-center justify-between hover:bg-indigo-50/70 transition">
+            <div class="flex items-center space-x-2 text-indigo-900 font-bold text-sm sm:text-base">
+              <span class="w-5 h-5 sm:w-6 sm:h-6 rounded-md bg-indigo-600 text-white flex items-center justify-center text-xs">2</span>
+              <span>第二步・核心概念與公式</span>
+              <span class="text-[11px] sm:text-xs font-normal text-indigo-500 ml-1">（點擊展開提示）</span>
+            </div>
+            <i id="step2-icon" class="fa-solid fa-chevron-down text-indigo-500 text-xs sm:text-sm transition-transform duration-200"></i>
+          </button>
+          
+          <div id="step2-content" class="hidden px-3 sm:px-4 pb-3 sm:pb-4 pt-1 text-xs sm:text-base text-slate-700 leading-relaxed border-t border-indigo-100/60 bg-white/70">
+            <div class="flex items-start space-x-2">
+              <i class="fa-solid fa-lightbulb text-amber-500 mt-0.5 text-sm sm:text-base shrink-0"></i>
+              <p id="q-concept-text" class="font-medium text-slate-800">情境圖片聽力理解...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: 拆解式引導問句 (核心互動點) -->
+        <div class="rounded-xl border border-emerald-100 bg-emerald-50/30 p-3 sm:p-4">
+          <div class="flex items-center justify-between mb-2 sm:mb-3">
+            <div class="flex items-center space-x-2 text-emerald-900 font-bold text-sm sm:text-base">
+              <span class="w-5 h-5 sm:w-6 sm:h-6 rounded-md bg-emerald-600 text-white flex items-center justify-center text-xs">3</span>
+              <h3>第三步・拆解式引導問句</h3>
+            </div>
+            <span class="text-[10px] sm:text-xs text-emerald-700 font-medium bg-emerald-100/80 px-2 py-0.5 rounded-full">
+              點擊直接回答
+            </span>
+          </div>
+
+          <div class="space-y-2 sm:space-y-3" id="q-step3-questions">
+            <!-- Dynamically populated with interactive question callouts -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Card Footer Helper -->
+      <div class="px-3.5 sm:px-5 py-2.5 sm:py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs sm:text-sm text-slate-500 shrink-0">
+        <span class="flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> 切題請用上方選單</span>
+        <button id="quick-fill-btn" class="text-sky-600 hover:text-sky-800 font-semibold inline-flex items-center">
+          <i class="fa-regular fa-paper-plane mr-1"></i> 回答問句 1 ➔
+        </button>
+      </div>
+    </section>
+
+    <!-- RIGHT PANEL: AI 專屬教練對話框 (AI Coach Chat) -->
+    <section id="panel-chat" class="w-full lg:w-1/2 hidden lg:flex flex-col bg-white rounded-xl sm:rounded-2xl border border-slate-200 custom-shadow overflow-hidden transition-all duration-200 flex-1 lg:flex-initial">
+      <!-- AI Header -->
+      <div class="px-3.5 sm:px-5 py-2.5 sm:py-3.5 bg-white border-b border-slate-200 flex items-center justify-between shrink-0">
+        <div class="flex items-center space-x-2.5 sm:space-x-3">
+          <div class="relative shrink-0">
+            <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center text-sm sm:text-lg shadow-sm">
+              <i class="fa-solid fa-robot"></i>
+            </div>
+            <span class="absolute bottom-0 right-0 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-emerald-500 border-2 border-white rounded-full"></span>
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center space-x-1.5 sm:space-x-2">
+              <h2 class="font-bold text-slate-800 text-sm sm:text-base truncate">AI 專屬訂正教練</h2>
+              <span id="ai-stage-badge" class="px-2 py-0.5 rounded-full text-[11px] sm:text-xs font-semibold bg-sky-100 text-sky-700 truncate">
+                思維引導中
+              </span>
+            </div>
+            <p class="text-[11px] sm:text-xs text-slate-500 truncate">嚴格落實啟發引導・不直接洩題・陪伴推導</p>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-1 shrink-0">
+          <!-- Mobile quick view prompt button -->
+          <button id="mobile-view-question-btn" class="lg:hidden p-1.5 text-sky-600 hover:bg-sky-50 rounded-lg text-xs font-semibold flex items-center gap-1 border border-sky-200 mr-1" title="看題目">
+            <i class="fa-solid fa-book-open"></i> 看題目
+          </button>
+          <button id="clear-chat-btn" class="p-1.5 sm:p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-100 rounded-lg transition" title="重啟本題對話">
+            <i class="fa-solid fa-arrows-rotate text-sm sm:text-base"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Chat History Box (Scrollable) -->
+      <div id="chat-messages-container" class="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-slate-50/60 text-sm sm:text-base">
+        <!-- Messages will be injected here -->
+      </div>
+
+      <!-- Quick Action Pills above text input -->
+      <div class="px-3 sm:px-4 py-1.5 sm:py-2 bg-white border-t border-slate-100 flex items-center space-x-1.5 sm:space-x-2 overflow-x-auto text-xs sm:text-sm shrink-0 no-scrollbar">
+        <span class="text-slate-400 text-xs sm:text-sm shrink-0 font-medium">快速回復:</span>
+        <button class="quick-reply-btn px-2.5 sm:px-3 py-1 sm:py-1.5 bg-slate-100 hover:bg-sky-50 hover:text-sky-700 text-slate-700 rounded-full border border-slate-200 shrink-0 transition text-xs sm:text-sm" data-text="針對問句 1，我的想法是：">
+          回答問句 1
+        </button>
+        <button class="quick-reply-btn px-2.5 sm:px-3 py-1 sm:py-1.5 bg-slate-100 hover:bg-sky-50 hover:text-sky-700 text-slate-700 rounded-full border border-slate-200 shrink-0 transition text-xs sm:text-sm" data-text="針對問句 2，我認為應該是：">
+          回答問句 2
+        </button>
+        <button class="quick-reply-btn px-2.5 sm:px-3 py-1 sm:py-1.5 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 rounded-full border border-slate-200 shrink-0 transition text-xs sm:text-sm" data-text="好，挑戰類似題！">
+          好，挑戰類似題！
+        </button>
+        <button class="quick-reply-btn px-2.5 sm:px-3 py-1 sm:py-1.5 bg-slate-100 hover:bg-amber-50 hover:text-amber-700 text-slate-700 rounded-full border border-slate-200 shrink-0 transition text-xs sm:text-sm" data-text="下一題">
+          下一題
+        </button>
+        <button class="quick-reply-btn px-2.5 sm:px-3 py-1 sm:py-1.5 bg-slate-100 hover:bg-purple-50 hover:text-purple-700 text-slate-700 rounded-full border border-slate-200 shrink-0 transition text-xs sm:text-sm" data-text="我有點卡住了，請教練再給我一點線索！">
+          卡住了，請給線索
+        </button>
+      </div>
+
+      <!-- Chat Input Area -->
+      <div class="p-2.5 sm:p-3.5 bg-white border-t border-slate-200 shrink-0">
+        <form id="chat-form" class="flex items-end space-x-2">
+          <div class="flex-1 bg-slate-100 rounded-xl border border-slate-200 focus-within:border-sky-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-sky-100 transition p-2">
+            <textarea
+              id="student-input"
+              rows="2"
+              class="w-full bg-transparent border-0 resize-none text-slate-800 text-sm sm:text-base focus:outline-none placeholder-slate-400"
+              placeholder="輸入你的思考回答（例如：我看到黑板上寫著公式...）"
+            ></textarea>
+          </div>
+          <button
+            type="submit"
+            id="send-btn"
+            class="h-10 sm:h-11 px-3.5 sm:px-5 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white rounded-xl font-medium text-xs sm:text-base flex items-center justify-center shadow-md shadow-sky-200 transition shrink-0 cursor-pointer"
+          >
+            <span>送出</span>
+            <i class="fa-solid fa-paper-plane ml-1.5 text-xs sm:text-sm"></i>
+          </button>
+        </form>
+        <div class="mt-1.5 flex items-center justify-between text-[11px] sm:text-xs text-slate-400 px-1">
+          <span class="truncate">推導 ➔ 通關 ➔ 即時出類題 ➔ 完成</span>
+          <span class="hidden sm:inline">Enter 送出，Shift+Enter 換行</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= INSTRUCTION MODAL ================= -->
+  <div id="info-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+      <div class="flex items-center justify-between pb-3.5 border-b border-slate-100">
+        <div class="flex items-center space-x-2 text-sky-700 font-bold text-lg">
+          <i class="fa-solid fa-graduation-cap text-xl"></i>
+          <h3>段考三步自主訂正四階段學習流程</h3>
+        </div>
+        <button id="close-modal-btn" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+
+      <div class="py-4 space-y-4 text-sm sm:text-base text-slate-600 leading-relaxed">
+        <div class="flex items-start space-x-3 p-3 rounded-lg bg-sky-50/60 border border-sky-100">
+          <span class="w-6 h-6 rounded-full bg-sky-600 text-white flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">1</span>
+          <div>
+            <strong class="text-sky-900 block font-semibold mb-0.5">階段一【思維引導】：</strong>
+            請閱讀左側「破題關鍵字」與「考卷對照指引」，在右側對話框回答「第三步思考問句」。AI 教練絕不直接透露答案，會一步步帶你推導出關鍵結論。
+          </div>
+        </div>
+
+        <div class="flex items-start space-x-3 p-3 rounded-lg bg-emerald-50/60 border border-emerald-100">
+          <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">2</span>
+          <div>
+            <strong class="text-emerald-900 block font-semibold mb-0.5">階段二【通關結算與類題邀約】：</strong>
+            當你推導出正解時，AI 教練會為你精準總結 1 句觀念，並詢問是否挑戰「平行類似題」加深印象。
+          </div>
+        </div>
+
+        <div class="flex items-start space-x-3 p-3 rounded-lg bg-purple-50/60 border border-purple-100">
+          <span class="w-6 h-6 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">3</span>
+          <div>
+            <strong class="text-purple-900 block font-semibold mb-0.5">階段三【現場即時類題出題與批改】：</strong>
+            若回答「好」，AI 會依據這題的文法、字彙或句型現場為你出一題全新的練習題並立即批改！
+          </div>
+        </div>
+
+        <div class="flex items-start space-x-3 p-3 rounded-lg bg-slate-100 border border-slate-200">
+          <span class="w-6 h-6 rounded-full bg-slate-600 text-white flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">4</span>
+          <div>
+            <strong class="text-slate-900 block font-semibold mb-0.5">階段四【收尾導流】：</strong>
+            完成類題後，系統會引導你於上方選單點選下一題，順暢累積訂正戰力！
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-3.5 border-t border-slate-100 flex justify-end">
+        <button id="confirm-modal-btn" class="px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold rounded-lg shadow-sm">
+          我知道了，開始訂正！
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= EMBEDDED COMPLETE DATASET ================= -->
+  <script>
+    /**
+     * 完整 90 題資料庫：
+     * - Part I 選擇題: 第 1 至 70 題
+     * - Part II 非選擇題: 文意字彙第 1 至 8 題 (VII 1-8)
+     * - Part II 非選擇題: 翻譯填空第 9 至 20 題 (VIII 9-20)
+     */
+    const EXAM_DATABASE = [
+      // Part I. 選擇題 1-70
+      {
+        id: "Q1",
+        num: 1,
+        part: "Part I. 選擇題",
+        category: "listen",
+        title: "第 1 題",
+        answer: "(D)",
+        keywords: "blackboard / algebraic formulas / instructing",
+        visual: "請對照紙本考卷第 1 頁第 1 題圖片，特別觀察黑板上書寫的代數公式（如 (a+b)2=a2+2ab+b2）以及站立在講台前的女士手中持教鞭向學生說明的姿態。",
+        concept: "情境圖片聽力理解（辨識教學場所 Classroom setting 及數學科目授課指令）。",
+        questions: [
+          "圖片中的女士站在什麼樣的環境中？她身後黑板上的符號屬於哪一個學科領域？",
+          "根據女士手持教棒與台下學生坐姿，這是在進行哪一種活動的場景？"
+        ]
+      },
+      {
+        id: "Q2",
+        num: 2,
+        part: "Part I. 選擇題",
+        category: "listen",
+        title: "第 2 題",
+        answer: "(C)",
+        keywords: "signs / \"NO War\" / \"Peace\" / marching",
+        visual: "請對照紙本考卷第 1 頁第 2 題圖片，特別觀察街頭行進隊伍中，群眾手中高舉的三面標語牌上的英文字母（\"NO War\", \"No More Violence\", \"Peace\"）。",
+        concept: "公共議題抗議與遊行情境（Rally / demonstration for peace and anti-violence）。",
+        questions: [
+          "群眾手舉的牌子寫著「反對戰爭」與「和平」，這群人正在進行什麼性質的群眾活動？",
+          "哪一個選項所描述的人群動作與標語訴求，與這幅街頭和平遊行畫面完全吻合？"
+        ]
+      },
+      {
+        id: "Q3",
+        num: 3,
+        part: "Part I. 選擇題",
+        category: "listen",
+        title: "第 3 題",
+        answer: "(B)",
+        keywords: "couldn't put the book down / fantastic book",
+        visual: "請對照紙本考卷第 1 頁第 3 題題目，注意說話者口氣與形容詞 fantastic。",
+        concept: "最佳回應句判斷與成語理解（\"couldn't put the book down\" 意指書本極度吸引人、愛不釋手）。",
+        questions: [
+          "英文慣用語中，如果說某人 \"couldn't put the book down\"，是在稱讚這本書還是批評這本書？",
+          "當對方分享某人對這本書極具熱情時，哪一個回應的立場（正面讚賞）與事實敘述最為一致？"
+        ]
+      },
+      {
+        id: "Q4",
+        num: 4,
+        part: "Part I. 選擇題",
+        category: "listen",
+        title: "第 4 題",
+        answer: "(A)",
+        keywords: "creative ideas / welcome / brainstorming",
+        visual: "請對照紙本考卷第 1 頁第 4 題，注意對話中討論團隊創意發想的情境。",
+        concept: "會議討論與提案回應（對發想創意表達開放且支持的態度）。",
+        questions: [
+          "當發話者提出需要更多新點子或推動創意發想時，贊同者通常會採取開放歡迎還是保守縮減的態度？",
+          "選項中哪一句明確表達了「樂意接納任何有創意的想法」的贊同語氣？"
+        ]
+      },
+      {
+        id: "Q5",
+        num: 5,
+        part: "Part I. 選擇題",
+        category: "listen",
+        title: "第 5 題",
+        answer: "(B)",
+        keywords: "lasers / measured / positions of trees",
+        visual: "請對照紙本考卷第 1 頁第 5 題選項，特別圈出各選項的動作核心詞（cut through / measured positions / calculated length / examined growth）。",
+        concept: "簡短談話細節題（辨識科學實驗中雷射掃描技術的具體測量對象）。",
+        questions: [
+          "聽力內容中提到科學家使用精密雷射儀器，是在記錄樹木的「位置形態變化」還是去「砍伐樹枝」？",
+          "實驗的主要焦點是觀察樹枝在不同時間點的哪種物理狀態？"
+        ]
+      },
+      {
+        id: "Q6",
+        num: 6,
+        part: "Part I. 選擇題",
+        category: "listen",
+        title: "第 6 題",
+        answer: "(D)",
+        keywords: "purpose / conserve energy / at night",
+        visual: "請對照紙本考卷第 1 頁第 6 題選項，關注植物在夜間生理反應的目的描述。",
+        concept: "因果關係與科學適應目的（植物在夜間垂枝以節省能量消耗）。",
+        questions: [
+          "聽力短文提到樹木在夜間放鬆或垂下枝葉，這種生理變化的生物學目的是為了獲取能量還是儲存保留能量？",
+          "選項中哪一個動詞帶有「保存、節省（資源或能量）」的核心概念？"
+        ]
+      },
+      {
+        id: "Q7",
+        num: 7,
+        part: "Part I. 選擇題",
+        category: "vocab_gram",
+        title: "第 7 題",
+        answer: "(C)",
+        keywords: "measures / online platforms / prevent",
+        visual: "請對照紙本考卷第 1 頁第 7 題題幹，圈出政府採取的行動目標與受詞 platforms。",
+        concept: "動詞語意與政策法規搭配（regulate 規範、管理；regulate platforms 規範平台）。",
+        questions: [
+          "政府採取新措施來防止平台擅自蒐集個資，這個作為屬於對網路平台的「規範管制」還是「暗示」？",
+          "哪一個動詞在法律政策脈絡中，專門用來指「制定規章以管理或約束」？"
+        ]
+      },
+      {
+        id: "Q8",
+        num: 8,
+        part: "Part I. 選擇題",
+        category: "vocab_gram",
+        title: "第 8 題",
+        answer: "(B)",
+        keywords: "figure / scientific community / important discoveries",
+        visual: "請對照紙本考卷第 1 頁第 8 題空格位置，修飾名詞 figure（人物）。",
+        concept: "形容詞修飾重要人物（prominent figure 傑出/著名人物）。",
+        questions: [
+          "一位在再生能源領域做出多次重大突破的科學家，會在學術界獲得怎樣的聲望？",
+          "哪一個形容詞專門用來形容人物「顯著的、傑出的、具崇高地位的」？"
+        ]
+      },
+      {
+        id: "Q9",
+        num: 9,
+        part: "Part I. 選擇題",
+        category: "vocab_gram",
+        title: "第 9 題",
+        answer: "(D)",
+        keywords: "in the hope of / long-standing dispute / peacefully",
+        visual: "請對照紙本考卷第 1 頁第 9 題，關注空格後的名詞受詞 dispute（爭端）。",
+        concept: "動詞與名詞搭配（resolve a dispute 和平解決紛爭）。",
+        questions: [
+          "兩國進行談判是為了對「長年爭端（dispute）」採取什麼行動？",
+          "哪一個動詞有「化解、徹底解決（衝突、爭端）」的意涵？"
+        ]
+      },
+      {
+        id: "Q10",
+        num: 10,
+        part: "Part I. 選擇題",
+        category: "vocab_gram",
+        title: "第 1 0 題",
+        answer: "(A)",
+        keywords: "Teenagers / large proportion / users",
+        visual: "請對照紙本考卷第 1 頁第 10 題，主詞 Teenagers 與受詞 a large proportion。",
+        concept: "比例與構成動詞辨析（constitute + proportion 佔...比例、構成；主詞為部分，受詞為比例）。",
+        questions: [
+          "青少年「佔據了」該應用程式用戶的極大比例，哪一個及物動詞可直接以「部分群體」作主詞接「比例」作受詞？",
+          "比較 compose 的用法：如果要用 compose 表達構成，主詞與受詞的關係以及主被動語態應如何呈現？"
+        ]
+      },
+      {
+        id: "Q11",
+        num: 11,
+        part: "Part I. 選擇題",
+        category: "vocab_gram",
+        title: "第 11 題",
+        answer: "(C)",
+        keywords: "Patience / leadership / difficult problems",
+        visual: "請對照紙本考卷第 1 頁第 11 題，觀察主詞 Patience（耐心）與空格補語的對應。",
+        concept: "抽象名詞品德與特質（virtue 美德、優良特質）。",
+        questions: [
+          "「耐心（Patience）」在領導才能中被視為一種優良的什麼？",
+          "選項中的 category（類別）、theme（主題）、shelter（庇護所）能否用來描述個人內在品性？"
+        ]
+      },
+      {
+        id: "Q12",
+        num: 12,
+        part: "Part I. 選擇題",
+        category: "vocab_gram",
+        title: "第 12 題",
+        answer: "(A)",
+        keywords: "ignore / reported dishonest practices / cost his job",
+        visual: "請對照紙本考卷第 1 頁第 12 題，關注 could not ignore his... 的道德動機。",
+        concept: "心理與道德名詞（conscience 良心、道德責任感）。",
+        questions: [
+          "該員工即使可能失業也要檢舉公司的欺瞞行為，是因為他無法忽視自己內心的什麼？",
+          "哪一個單字指的是明辨是非善惡的「良心、良知」？"
+        ]
+      },
+      {
+        id: "Q13",
+        num: 13,
+        part: "Part I. 選擇題",
+        category: "vocab_gram",
+        title: "第 13 題",
+        answer: "(D)",
+        keywords: "enormous amounts of electricity / pressure on power supply",
+        visual: "請對照紙本考卷第 2 頁第 13 題，尋找與 electricity 搭配的及物動詞。",
+        concept: "能源消耗動詞搭配（consume electricity 消耗大量電力）。",
+        questions: [
+          "大型工廠對當地供電造成沉重負擔，是因為它們對電量有什麼樣的動作？",
+          "assemble（組裝）、attach（附上）、deserve（應得）中，哪一個能與「大量能源」搭配表示消耗？"
+        ]
+      },
+      {
+        id: "Q14",
+        num: 14,
+        part: "Part I. 選擇題",
+        category: "vocab_gram",
+        title: "第 14 題",
+        answer: "(B)",
+        keywords: "solution / fair and practical / reached",
+        visual: "請對照紙本考卷第 2 頁第 14 題，修飾名詞 solution 的形容詞。",
+        concept: "形容詞修飾方案（agreeable solution 雙方均表同意且滿意的方案）。",
+        questions: [
+          "雙方都認為既公平又務實的解決方案，代表該方案對雙方而言是「令人欣然接受的」，字根與哪一個動詞相關？",
+          "contented 通常修飾「感到滿足的人」，那麼修飾「令人滿意的解決方案」時應選哪一個詞？"
+        ]
+      },
+      {
+        id: "Q15",
+        num: 15,
+        part: "Part I. 選擇題",
+        category: "vocab_gram",
+        title: "第 15 題",
+        answer: "(B)",
+        keywords: "resources to mental health / in response to",
+        visual: "請對照紙本考卷第 2 頁第 15 題，注意動詞與介系詞 to 的搭配。",
+        concept: "動詞介系詞搭配（commit resources to N 投入資源於某事物）。",
+        questions: [
+          "大學積極回應學生心理健康需求，會把更多資源「提撥、投注」到該領域，哪一個動詞常搭配介系詞 to 表投注？",
+          "ceased（停止）或 abandoned（放棄）在文意脈絡中是否能呼應正面支持的態度？"
+        ]
+      },
+      {
+        id: "Q16",
+        num: 16,
+        part: "Part I. 選擇題",
+        category: "vocab_gram",
+        title: "第 16 題",
+        answer: "(A)",
+        keywords: "The law itself is not enough / strict / follow regulations",
+        visual: "請對照紙本考卷第 2 頁第 16 題，注意 strict _____ of the rules 中的名詞。",
+        concept: "法規執行的名詞搭配（law enforcement 法律執行、執法）。",
+        questions: [
+          "單單訂立法規還不夠，必須伴隨嚴格的什麼動作才能迫使企業守法？",
+          "哪一個名詞由 enforce（強制執行）衍生而來，專門指法令的執行與貫徹？"
+        ]
+      },
+      {
+        id: "Q17",
+        num: 17,
+        part: "Part I. 選擇題",
+        category: "vocab_gram",
+        title: "第 17 題",
+        answer: "(D)",
+        keywords: "Unlike medical technology today / centuries ago / limited",
+        visual: "請對照紙本考卷第 2 頁第 17 題，句首由 Unlike 帶出的古代與現代科技對比。",
+        concept: "形容詞對比關係（primitive 原始的、簡陋的；與現代醫療科技形成對比）。",
+        questions: [
+          "句首由 \"Unlike\" 帶出古今對比，數百年前的醫療工具既有限又非常如何？",
+          "哪一個形容詞專門指處於早期階段、技術「原始且簡陋」的狀態？"
+        ]
+      },
+      {
+        id: "Q18",
+        num: 18,
+        part: "Part I. 選擇題",
+        category: "vocab_gram",
+        title: "第 18 題",
+        answer: "(C)",
+        keywords: "pressure / final minutes of the match / determine outcome",
+        visual: "請對照紙本考卷第 2 頁第 18 題，修飾比賽高壓狀態的形容詞。",
+        concept: "形容詞辨析（intense pressure 強烈的心理/情境壓力；intensive 密集集中的）。",
+        questions: [
+          "比賽最後關頭，任何小失誤都決定勝負，選手承受的是程度極度「強烈、劇烈」的壓力，應選哪一個字？",
+          "intensive 通常用於修飾密集訓練或研究（如 intensive care/training），修飾高強度緊繃感應用哪一個？"
+        ]
+      },
+      {
+        id: "Q19",
+        num: 19,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 19 題",
+        answer: "(B)",
+        keywords: "found _____ deeply meaningful _____ comfort",
+        visual: "請對照紙本考卷第 2 頁題組 (A) 第一段，觀察 found 後面先出現受詞補語 deeply meaningful，真正的受詞動作出現在其後。",
+        concept: "虛受詞句型公式（S + find + it + adj. + to V）。",
+        questions: [
+          "當動詞 find 的真正受詞是不定詞片語時，受詞位置必須放置哪一個代名詞作為「虛受詞」？",
+          "接在形容詞受詞補語之後的真正受詞，動詞應以什麼形式呈現？"
+        ]
+      },
+      {
+        id: "Q20",
+        num: 20,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 20 題",
+        answer: "(C)",
+        keywords: "_____ this woman _____ something equally important",
+        visual: "請對照紙本考卷第 2 頁題組 (A)，注意動詞與介系詞 of 的連用。",
+        concept: "動詞與介系詞搭配（deprive sb of sth 剝奪某人某物）。",
+        questions: [
+          "嚴格不通融的院規會造成這位臨終婦人「失去/被剝奪」心靈慰藉的機會，表示剝奪的動詞是哪一個？",
+          "哪一個動詞習慣與介系詞 \"of\" 連用，表示剝奪某人應享有的權利或事物？"
+        ]
+      },
+      {
+        id: "Q21",
+        num: 21,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 21 題",
+        answer: "(D)",
+        keywords: "could simply have refused / began thinking about what truly mattered",
+        visual: "請對照紙本考卷第 2 頁題組 (A)，分析前後兩句行動方案的反差。",
+        concept: "篇章轉折副詞（Instead 反而、取而代之的是；連接前句未採取的作為與後句實際的轉向）。",
+        questions: [
+          "前句說護理長「原本可以直接依規拒絕」，後句說「她開始思考什麼對病人最重要」，這兩句是因果還是轉折？",
+          "哪一個副詞能精確表達「沒有採取前者的做法，反而採取後者」的意涵？"
+        ]
+      },
+      {
+        id: "Q22",
+        num: 22,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 22 題",
+        answer: "(C)",
+        keywords: "_____ the possible risks, she heard...",
+        visual: "請對照紙本考卷第 2 頁題組 (A)，逗號後主詞為 she。",
+        concept: "分詞構句與連接詞保留（While considering... 主詞 she 為主動考慮風險）。",
+        questions: [
+          "逗號後的主詞是 she（護理長），「考慮可能的風險」這件事是她主動發出還是被動承受？",
+          "保留時間連接詞 While 的分詞構句中，主動進行的動作應選擇現在分詞（V-ing）還是過去分詞（p.p.）？"
+        ]
+      },
+      {
+        id: "Q23",
+        num: 23,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 23 題",
+        answer: "(A)",
+        keywords: "found her _____ with tears in her eyes",
+        visual: "請對照紙本考卷第 2 頁題組 (A)，老婦人躺在病床上的狀態。",
+        concept: "感官與發現動詞受詞補語（find + O + V-ing 表示發現某人正處於某主動狀態；lie 的現在分詞為 lying）。",
+        questions: [
+          "句型 \"find + 受詞 + 受詞補語\" 中，老婦人「安靜躺著」是主動維持的狀態，動詞 lie（躺）的現在分詞應如何拼寫？",
+          "注意 lie-lay-lain（躺）的現在分詞規則：字尾 -ie 遇到 -ing 該如何變化？"
+        ]
+      },
+      {
+        id: "Q24",
+        num: 24,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 24 題",
+        answer: "(D)",
+        keywords: "_____ focused on the machines / seemed peaceful",
+        visual: "請對照紙本考卷第 3 頁題組 (A) 結尾段，表示狀態轉變不再聚焦冰冷儀器。",
+        concept: "否定副詞片語修飾分詞（No longer focused on... = She was no longer focused on... 表示「不再」）。",
+        questions: [
+          "當貓咪來到身邊後，老婦人的注意力產生了轉變，她「不再」只聚焦於周圍冰冷的儀器，哪一個片語表示「不再」？",
+          "比較 No longer 與 No sooner 的語法意義，哪一個可以用來修飾過去分詞表示狀態終止？"
+        ]
+      },
+      {
+        id: "Q25",
+        num: 25,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 25 題",
+        answer: "(B)",
+        keywords: "_____ the staff _____ allowing the reunion",
+        visual: "請對照紙本考卷第 3 頁題組 (A)，感謝醫護團隊的句構與介系詞搭配。",
+        concept: "動詞介系詞搭配（thank sb for V-ing 為了某事感謝某人）。",
+        questions: [
+          "家屬感謝醫護人員通融見面，動詞 thank 後面直接接受詞（對象），後面接感謝原因時使用哪一個介系詞？",
+          "為什麼不能選 (A) thanked to？thank 是及物還是不及物動詞？"
+        ]
+      },
+      {
+        id: "Q26",
+        num: 26,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 26 題",
+        answer: "(D)",
+        keywords: "discover whether an idea will actually work / turn it into something real",
+        visual: "請對照紙本考卷第 3 頁題組 (B)，原型設計段落的第一句話句型。",
+        concept: "時間關聯句型公式（not... until... 直到...才...）。",
+        questions: [
+          "我們往往要等到「真正把想法做成實物」之後，才能發現它是否行得通，表達「直到...才...」的經典句型是什麼？",
+          "本段在陳述客觀普遍道理，主要子句與從屬子句在時態上應採用何種現在式搭配？"
+        ]
+      },
+      {
+        id: "Q27",
+        num: 27,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 27 題",
+        answer: "(C)",
+        keywords: "prototyping / has been _____ by designers",
+        visual: "請對照紙本考卷第 3 頁題組 (B)，被動語態 has been _____ by...",
+        concept: "被動語態與動詞搭配（adopt a method 採用某種方法/理念）。",
+        questions: [
+          "原型製作（prototyping）作為一種工作方法，被全球設計師廣泛「採納運用」，哪一個動詞表示採納？",
+          "adjusted（調整）與 constructed（建造）在語意上能否貼合「方法被採用」的脈絡？"
+        ]
+      },
+      {
+        id: "Q28",
+        num: 28,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 28 題",
+        answer: "(A)",
+        keywords: "Lessons gained... more memorable than _____ gained...",
+        visual: "請對照紙本考卷第 3 頁題組 (B)，前後兩端比較的對象名詞 Lessons。",
+        concept: "代名詞替代規則（those 用以指代前方已提過的複數名詞 the lessons）。",
+        questions: [
+          "比較級結構中，後半段用來代替前半段出現過的「複數名詞（Lessons）」的指示代名詞是 that 還是 those？",
+          "觀察被比較的兩端，動手獲得的「教訓」與單純聆聽獲得的「教訓」，前後名詞單複數是否必須一致？"
+        ]
+      },
+      {
+        id: "Q29",
+        num: 29,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 29 題",
+        answer: "(B)",
+        keywords: "_____ this / adults spend too much time planning / fear making mistakes",
+        visual: "請對照紙本考卷第 3 頁題組 (B)，後接代名詞 this 作受詞。",
+        concept: "讓步介系詞片語（Despite + N/V-ing 儘管知道這一點）。",
+        questions: [
+          "前文強調原型不必完美，後文卻說大人因為害怕犯錯而規劃過度，前後呈現讓步對比，應選讓步還是因果關係？",
+          "(C) In spite of 後面可以直接接主詞動詞子句（they know）嗎？文法上正確接名詞/動名詞的選項是哪一個？"
+        ]
+      },
+      {
+        id: "Q30",
+        num: 30,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 30 題",
+        answer: "(C)",
+        keywords: "time to _____ different possibilities / move on to another",
+        visual: "請對照紙本考卷第 3 頁題組 (B)，注意動詞與介系詞 with 的搭配。",
+        concept: "動詞片語搭配（experiment with 嘗試、試驗各種可能性）。",
+        questions: [
+          "小孩在動手做時若一個方法不行就換另一個，這讓他們有更多時間去「嘗試/試驗」各種可能性，動詞搭配介系詞 with 的是哪一個？",
+          "cooperate with（與...合作）或 consist of（由...組成）代入受詞「可能性」，語意是否符合探索未知的精神？"
+        ]
+      },
+      {
+        id: "Q31",
+        num: 31,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 31 題",
+        answer: "(D)",
+        keywords: "Still _____ benefit / encourages collaboration",
+        visual: "請對照紙本考卷第 3 頁題組 (B)，修飾單數名詞 benefit。",
+        concept: "不定代名詞/形容詞用法（Still another + 單數可數名詞 還有另一個好處）。",
+        questions: [
+          "前文已列舉了原型的數項好處，此處引出未限定範圍中的「另一個好處」，且 benefit 為單數，應選哪一個詞？",
+          "the other 通常用於兩者中的另一個或特定範圍剩下的，未限定總數中的「另一個」該用哪一個？"
+        ]
+      },
+      {
+        id: "Q32",
+        num: 32,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 32 題",
+        answer: "(B)",
+        keywords: "start small, test, adjust / failure becomes valuable",
+        visual: "請對照紙本考卷第 3 頁題組 (B) 結尾句，承接前述做事方式的副詞片語。",
+        concept: "邏輯承接副詞片語（In this way 如此一來、藉由這種方式）。",
+        questions: [
+          "前一句建議「從小規模開始測試並即時修正」，接續說明「透過這個方法」，失敗就會轉化為有價值的資訊，這屬於哪種邏輯承接？",
+          "By contrast（相反地）與 For example（例如）能否承接前述手段所帶來的必然結果？"
+        ]
+      },
+      {
+        id: "Q33",
+        num: 33,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 33 題",
+        answer: "(C)",
+        keywords: "regarded cooking as _____ a useful cultural habit, rather than a force...",
+        visual: "請對照紙本考卷第 3 頁題組 (C)，注意 rather than 呈現的限縮語氣。",
+        concept: "副詞片語辨析（nothing but = only 僅僅、只不過；anything but = definitely not 絕不）。",
+        questions: [
+          "長期以來學者僅將烹飪看作「只不過是」一項文化習慣，而非改變身體結構的力量，表示「僅僅/只不過」的片語是什麼？",
+          "比較 anything but（絕非）與 nothing but（僅僅是），哪一個符合後方 \"rather than\" 構成的限縮語氣？"
+        ]
+      },
+      {
+        id: "Q34",
+        num: 34,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 34 題",
+        answer: "(B)",
+        keywords: "_____ Homo sapiens appeared / Homo erectus had already existed",
+        visual: "請對照紙本考卷第 3 頁題組 (C)，從屬子句 appeared (過去式) 與主要子句 had already existed (過去完成式)。",
+        concept: "時間連接詞與過去完成式搭配（By the time + 過去式子句，主要子句用 had + p.p.）。",
+        questions: [
+          "從屬子句是過去式（appeared），主要子句是過去完成式（had already existed），表示「到了...的時候，某事早已經發生」，應使用哪一個時間連接詞？",
+          "As soon as（一...就...）或 Even if（即使）能否引導一個以過去完成式表示「截止時間點之前已存在」的結構？"
+        ]
+      },
+      {
+        id: "Q35",
+        num: 35,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 35 題",
+        answer: "(D)",
+        keywords: "_____ more usable energy / early hominins processed food",
+        visual: "請對照紙本考卷第 3 頁題組 (C)，句首片語說明早期人類處理食物的目的。",
+        concept: "不定詞片語表目的（To V 置於句首表示「為了達成...目的」）。",
+        questions: [
+          "早期人類在進食前先加工食物，其「目的是為了」從相同食材中獲取更多可用能量，句首表目的應使用何種動詞形式？",
+          "如果選用過去分詞 Obtained，其邏輯主詞變成早期人類，人類是被獲得還是去獲取能量？"
+        ]
+      },
+      {
+        id: "Q36",
+        num: 36,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 36 題",
+        answer: "(D)",
+        keywords: "_____ , cooked food requires less effort...",
+        visual: "請對照紙本考卷第 3 頁題組 (C)，逗號後主詞為 cooked food。",
+        concept: "形容詞片語修飾主詞（省略 Being 的形容詞片語置於句首修飾 cooked food）。",
+        questions: [
+          "逗號後的主要子句主詞是 cooked food（煮熟的食物），說明該食物具備「更容易咀嚼與消化」的特質，應選用主動動名詞還是形容詞修飾？",
+          "若選 (B) It is easier...，會不會導致兩個完整句子之間缺乏連接詞而產生 run-on sentence 的文法錯誤？"
+        ]
+      },
+      {
+        id: "Q37",
+        num: 37,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 37 題",
+        answer: "(A)",
+        keywords: "process outside the body _____ more energy can be directed...",
+        visual: "請對照紙本考卷第 3 頁題組 (C)，連接體外預先消化與能量流向大腦的從屬連接詞。",
+        concept: "表目的/結果的從屬連接詞（so that + S + can + V 以便、使得...）。",
+        questions: [
+          "烹飪在體外代勞了部分消化程序，其效果是「使得」更多能量可以被導向大腦發育，表示「以便於/使得」的連接詞是哪一個？",
+          "for fear that（唯恐/以免）或 now that（既然）是否符合此生理進化的目的與結果？"
+        ]
+      },
+      {
+        id: "Q38",
+        num: 38,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 38 題",
+        answer: "(B)",
+        keywords: "make softer meals _____ roots, tubers vegetables, and meat",
+        visual: "請對照紙本考卷第 4 頁題組 (C)，以根莖類為原料製作餐點的介系詞。",
+        concept: "介系詞表示原料轉化（make A out of B 利用原料 B 製作出產物 A）。",
+        questions: [
+          "人類利用根莖類植物與肉類等原料「做成」更軟的餐食，片語 make sth _____ the materials 應搭配哪一個介系詞？",
+          "in addition to（除...之外）或 owing to（因為）放入句中能否構成「以...為材料製成料理」的語意？"
+        ]
+      },
+      {
+        id: "Q39",
+        num: 39,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 39 題",
+        answer: "(A)",
+        keywords: "While _____ methods involve years / discoveries born in dreams",
+        visual: "請對照紙本考卷第 4 頁題組 (D)，常規實驗與夢中頓悟的對比。",
+        concept: "形容詞語意對比（conventional 傳統的、常規的；與夢中獲得靈感形成對比）。",
+        questions: [
+          "句首由 While 帶出對比，一方是夢中靈感意外誕生，另一方則是耗費數年反覆實驗的「傳統/常規」科研方法，哪一個字代表常規的？",
+          "unidentified（未確認的）或 massive（大規模的）能否貼切描述行之有年的正規研究方法？"
+        ]
+      },
+      {
+        id: "Q40",
+        num: 40,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 40 題",
+        answer: "(C)",
+        keywords: "thanks to _____ insights / born in dreams",
+        visual: "請對照紙本考卷第 4 頁題組 (D)，修飾名詞 insights 的複合形容詞。",
+        concept: "複合形容詞構詞規則（名詞 + 過去分詞：dream-inspired 由夢境所啟發的；修飾 insights）。",
+        questions: [
+          "靈感與洞見（insights）是「被夢境所啟發」還是主動去啟發夢境？",
+          "「名詞 + 分詞」構成複合形容詞時，表達被動受啟發應採用 V-ing 還是 p.p.？"
+        ]
+      },
+      {
+        id: "Q41",
+        num: 41,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 41 題",
+        answer: "(B)",
+        keywords: "helped him _____ the ring-shaped structure of benzene",
+        visual: "請對照紙本考卷第 4 頁題組 (D)，化學家在腦海中勾勒苯分子結構。",
+        concept: "動詞語意與心智想像（envision 在心中想像、勾勒出景象）。",
+        questions: [
+          "咬尾巴的蛇這個夢中影像，幫助化學家在腦海中「想像並描繪出」苯的環狀結構，哪一個動詞表示在心中構思圖像？",
+          "undertake（承擔）與 trigger（引發）能否用來描述在腦海中看出具體化學結構？"
+        ]
+      },
+      {
+        id: "Q42",
+        num: 42,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 42 題",
+        answer: "(D)",
+        keywords: "_____ different ideas and images combined... , the sleeping brain...",
+        visual: "請對照紙本考卷第 4 頁題組 (D)，空格後為「名詞受詞 + 過去分詞」結構。",
+        concept: "獨立分詞與附帶狀況結構（With + O + O.C. 由於/隨著...處於某狀態）。",
+        questions: [
+          "觀察逗號前的結構：「空格 + 名詞受詞 + 過去分詞（combined）」，這符合哪一個介系詞引導的附帶狀況結構？",
+          "若選 If 或 Since，它們作為從屬連接詞，後面必須接完整的子句（含時態動詞），而此處 combined 是分詞還是具有時態的及物動詞？"
+        ]
+      },
+      {
+        id: "Q43",
+        num: 43,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 43 題",
+        answer: "(B)",
+        keywords: "leave many questions _____",
+        visual: "請對照紙本考卷第 4 頁題組 (D)，leave + 受詞 questions + 受詞補語。",
+        concept: "使役/保留動詞受詞補語（leave + O + p.p. 使某事物處於被...的狀態；unanswered 未被解答的）。",
+        questions: [
+          "句型 \"leave + 受詞 + 受詞補語\" 中，問題（questions）與回答（answer）之間是被動關係還是主動關係？",
+          "形容問題處於「未被解答的、懸而未決的」狀態，應選用主動分詞還是被動分詞？"
+        ]
+      },
+      {
+        id: "Q44",
+        num: 44,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 44 題",
+        answer: "(A)",
+        keywords: "everything began to _____ as he pursued it / trained and traveled",
+        visual: "請對照紙本考卷第 4 頁題組 (E)，形容事情步入正軌、水到渠成。",
+        concept: "慣用片語（fall into place 事情步入正軌、順利就緒、水到渠成）。",
+        questions: [
+          "當他追尋太空夢想時，努力與各項機緣開始「水到渠成、有條不紊地落實」，哪一個片語形容事物順理成章地就位？",
+          "take it for granted（視為理所當然）或 think on his feet（臨機應變）在語境中是否符合努力圓夢的過程？"
+        ]
+      },
+      {
+        id: "Q45",
+        num: 45,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 45 題",
+        answer: "(C)",
+        keywords: "_____ as an astronaut in 2009, Lindgren underwent...",
+        visual: "請對照紙本考卷第 4 頁題組 (E)，主要子句主詞為林格倫醫師。",
+        concept: "分詞片語被動式（After being selected... = After he was selected...）。",
+        questions: [
+          "主要子句的主詞是林格倫（Lindgren），他是「被選拔為太空人」還是他去選拔別人？",
+          "介系詞 After 後面接動詞時，表達「在被挑選之後」的動名詞被動式該如何書寫？"
+        ]
+      },
+      {
+        id: "Q46",
+        num: 46,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 46 題",
+        answer: "(D)",
+        keywords: "there is _____ research on human emotions",
+        visual: "請對照紙本考卷第 4 頁題組 (F)，注意不可數名詞 research 前方的數量修飾語。",
+        concept: "名詞數量修飾語搭配（research 為不可數名詞，需搭配 a large amount of 修飾）。",
+        questions: [
+          "請檢查空格後面的名詞 \"research\"，在英文中是可數名詞還是不可數名詞？",
+          "修飾不可數名詞的「大量」，應用 a great number of 還是 a large amount of？"
+        ]
+      },
+      {
+        id: "Q47",
+        num: 47,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 47 題",
+        answer: "(B)",
+        keywords: "shape how we _____ the world around us",
+        visual: "請對照紙本考卷第 4 頁題組 (F)，對周遭世界做出回應的動詞片語。",
+        concept: "動詞介系詞搭配（respond to 對...做出回應與反應）。",
+        questions: [
+          "情緒不僅塑造我們的信念，更決定我們如何「應對、回應」周圍的世界，哪一個動詞片語表示對外界做出反應？",
+          "call for（呼籲）或 meet with（偶遇、遭受）能否用來描述個人感知與應對外在環境的互動方式？"
+        ]
+      },
+      {
+        id: "Q48",
+        num: 48,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 48 題",
+        answer: "(B)",
+        keywords: "_____ they are new purchases or old favorites",
+        visual: "請對照紙本考卷第 4 頁題組 (F)，注意子句中的 A or B 讓步對照。",
+        concept: "讓步副詞子句連接詞（whether A or B 無論是A還是B）。",
+        questions: [
+          "插入句中出現 \"A or B\" 的對照結構，表達「無論是新買的還是舊愛」，引導此子句的連接詞是哪一個？",
+          "either 雖然常與 or 連用，但在引導一個完整的讓步副詞子句時，正確的連接詞是 either 還是 whether？"
+        ]
+      },
+      {
+        id: "Q49",
+        num: 49,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 49 題",
+        answer: "(C)",
+        keywords: "the idea that _____ we wear shapes our mindset",
+        visual: "請對照紙本考卷第 4 頁題組 (F)，動詞 wear 缺乏受詞，同時整段子句作為 shapes 的主詞。",
+        concept: "複合關係代名詞 / 名詞子句受詞兼主詞（what = the thing that，在子句中作 wear 的受詞，整題引導名詞子句作 shapes 的主詞）。",
+        questions: [
+          "觀察子句結構：wear 後面缺少受詞，而整個名詞片語又作為動詞 shapes 的主詞，哪一個字兼具「先行詞 + 關係代名詞（所穿之物）」的功能？",
+          "連接詞 that 在名詞子句中不作任何受詞或主詞成分，此處 wear 明顯缺乏受詞，能單純填 that 嗎？"
+        ]
+      },
+      {
+        id: "Q50",
+        num: 50,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 50 題",
+        answer: "(A)",
+        keywords: "with practical _____ for our understanding",
+        visual: "請對照紙本考卷第 4 頁題組 (F)，常與介系詞 for 連用表示對理解深遠啟示的名詞。",
+        concept: "名詞語意與搭配（implications for 對...的啟示、深遠意涵）。",
+        questions: [
+          "穿著白袍能提升專注度的實驗發現，對於我們理解服裝如何影響行為帶來了實質的「啟示/意涵」，哪一個名詞常搭配介系詞 for 表示啟發與影響？",
+          "procedures（程序）或 motivations（動機）放入句中能否表達一項研究所帶來的理論與實務啟示？"
+        ]
+      },
+      {
+        id: "Q51",
+        num: 51,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 51 題",
+        answer: "(D)",
+        keywords: "influence the process _____ we receive and interpret information",
+        visual: "請對照紙本考卷第 4 頁題組 (F)，先行詞 the process 與後方子句的介系詞搭配。",
+        concept: "關係代名詞與介系詞搭配（by which we receive information 藉由此過程我們接收訊息）。",
+        questions: [
+          "先行詞是 \"the process\"（過程），後方子句結構完整，還原後的文意是「我們透過/藉由此過程接收資訊」，介系詞應搭配哪一個？",
+          "表示「藉由某種程序/手段」時，介系詞通常使用 by 還是 in？"
+        ]
+      },
+      {
+        id: "Q52",
+        num: 52,
+        part: "Part I. 選擇題",
+        category: "cloze",
+        title: "第 52 題",
+        answer: "(D)",
+        keywords: "avoid making impulsive decisions that we might _____ make",
+        visual: "請對照紙本考卷第 4 頁題組 (F)，表示「若非反思克制，原本在其他情況下會做出」的副詞。",
+        concept: "副詞語意辨析（otherwise 否則、在其他情況下；might otherwise make = 若不反思克制，原本在情緒驅使下會做出的）。",
+        questions: [
+          "我們需要暫停並辨識情緒，以免做出那些「在其他情況下/若非冷靜思考下」本來可能會衝動作出的決定，哪一個副詞表示「否則/在不同條件下」？",
+          "likewise（同樣地）或 therefore（因此）代入句中是否能傳達防範未然的假設情境？"
+        ]
+      },
+      {
+        id: "Q53",
+        num: 53,
+        part: "Part I. 選擇題",
+        category: "blank",
+        title: "第 53 題",
+        answer: "(D) known for",
+        keywords: "_____ its world-class musicals / attracts millions",
+        visual: "請對照紙本考卷第 4 頁大題 IV 第一段，觀察百老匯段落的第一句開頭，後面緊接介系詞 its world-class musicals。",
+        concept: "分詞片語修飾主詞（(Being) known for 以...聞名；省略 Being 的形容詞分詞置於句首）。",
+        questions: [
+          "百老匯以其世界級的音樂劇與戲劇「聞名遐邇」，選項中哪一個片語常與介系詞 for 連用表示特色？",
+          "檢視選項清單，(D) known for 與句型主詞 it（百老匯）的主被動關係是否完全符合？"
+        ]
+      },
+      {
+        id: "Q54",
+        num: 54,
+        part: "Part I. 選擇題",
+        category: "blank",
+        title: "第 54 題",
+        answer: "(E) giving",
+        keywords: "bring stories to life, _____ Broadway an advantage",
+        visual: "請對照紙本考卷第 4 頁大題 IV，逗號後分詞構句表結果。",
+        concept: "分詞構句表結果（giving sb an advantage 賦予某人優勢）。",
+        questions: [
+          "前方子句完整，逗號後用分詞構句表達結果，表示「從而賦予了百老匯超越其他劇場的優勢」，應選哪一個動詞的 V-ing 形式？",
+          "比較 giving 與 making 的用法：表達「給予某人一項優勢」，慣用語是 give Broadway an advantage 還是 make Broadway an advantage？"
+        ]
+      },
+      {
+        id: "Q55",
+        num: 55,
+        part: "Part I. 選擇題",
+        category: "blank",
+        title: "第 55 題",
+        answer: "(AD) stirs up",
+        keywords: "It _____ a deeper appreciation",
+        visual: "請對照紙本考卷第 4 頁大題 IV，主詞為單數 It，受詞為 appreciation。",
+        concept: "動詞片語與單數動詞（stir up 喚起、激起情感；主詞 It 為單數，加 -s）。",
+        questions: [
+          "一個看戲的夜晚能夠「激起、喚醒」人們對藝術創作更深層的欣賞，哪一個片語有激盪、喚起情感之意？",
+          "主詞是單數代名詞 It，選項中的動詞片語是否具備第三人稱單數動詞形式？"
+        ]
+      },
+      {
+        id: "Q56",
+        num: 56,
+        part: "Part I. 選擇題",
+        category: "blank",
+        title: "第 56 題",
+        answer: "(A) highlights",
+        keywords: "one of the _____ of their trip",
+        visual: "請對照紙本考卷第 4 頁大題 IV，句型 one of the + 複數名詞。",
+        concept: "名詞語意與語法結構（one of the + 複數名詞；highlight 最精采的部分、亮點）。",
+        questions: [
+          "句型 \"one of the + 複數名詞\" 要求此處填入複數名詞，這場夜晚成為整個旅程最精采的「亮點/高潮」，應選哪一個詞？",
+          "選項中以複數名詞型態呈現且符合旅遊精華體驗的單字是哪一個？"
+        ]
+      },
+      {
+        id: "Q57",
+        num: 57,
+        part: "Part I. 選擇題",
+        category: "blank",
+        title: "第 57 題",
+        answer: "(B) reduced to",
+        keywords: "was once _____ an unused piece of infrastructure",
+        visual: "請對照紙本考卷第 4 頁大題 IV 第二段高架公園段落，描述其被廢棄的歷史。",
+        concept: "被動動詞片語（be reduced to 淪落為、縮減為某種不堪狀態）。",
+        questions: [
+          "這座高架公園在改造前，曾經「淪為」一段被廢棄不用的城市基礎設施，哪一個片語表示淪落至次等狀態？",
+          "檢視片語 be reduced to 後方接名詞片語的搭配，語意是否完全吻合廢線鐵道的歷史轉變？"
+        ]
+      },
+      {
+        id: "Q58",
+        num: 58,
+        part: "Part I. 選擇題",
+        category: "blank",
+        title: "第 58 題",
+        answer: "(AC) making",
+        keywords: "transformed it into a green space, _____ it easy for visitors to...",
+        visual: "請對照紙本考卷第 4 頁大題 IV，分詞引導虛受詞 it + easy + for sb to V。",
+        concept: "分詞構句與虛受詞句型（making + it + adj. + for sb to V 使...變得容易）。",
+        questions: [
+          "紐約市將舊鐵道改建成公共綠地，結果「使得」遊客更容易親近植物與景觀，此處分詞表結果應使用哪一個動詞？",
+          "哪一個動詞的分詞能夠完美嵌合受詞 it、受詞補語 easy 以及後方真受詞 to appreciate 的使役結構？"
+        ]
+      },
+      {
+        id: "Q59",
+        num: 59,
+        part: "Part I. 選擇題",
+        category: "blank",
+        title: "第 59 題",
+        answer: "(C) accounts for",
+        keywords: "Its creative transformation _____ much of its popularity",
+        visual: "請對照紙本考卷第 4 頁大題 IV，說明高架公園爆紅原因的片語動詞。",
+        concept: "動詞片語（account for 解釋...原因、促成、佔...）。",
+        questions: [
+          "高架公園的創意翻新，是「促成/解釋」它廣受遊客與居民喜愛的主因，哪一個動詞片語意思是「說明...的原因、促成」？",
+          "注意主詞 transformation 為單數，所選的片語動詞是否為單數形態？"
+        ]
+      },
+      {
+        id: "Q60",
+        num: 60,
+        part: "Part I. 選擇題",
+        category: "blank",
+        title: "第 60 題",
+        answer: "(AE) atmosphere",
+        keywords: "offers a totally different _____ from the previous two",
+        visual: "請對照紙本考卷第 4 頁大題 IV 第三段 911 紀念館段落，修飾場所氛圍。",
+        concept: "名詞語意辨析（atmosphere 氣氛、氛圍）。",
+        questions: [
+          "與喧鬧的百老匯及悠閒的高架公園相比，911紀念館帶給參觀者的是截然不同的何種整體感受？",
+          "空格前有冠詞 a 與形容詞 different 修飾，哪一個名詞專門指場所散發出的「氛圍」？"
+        ]
+      },
+      {
+        id: "Q61",
+        num: 61,
+        part: "Part I. 選擇題",
+        category: "blank",
+        title: "第 61 題",
+        answer: "(AB) reflective",
+        keywords: "serious and _____ / encouraging people to pause and think",
+        visual: "請對照紙本考卷第 4 頁大題 IV，and 連接兩個平行形容詞 serious and _____。",
+        concept: "形容詞平行對等（serious and reflective 嚴肅且引人深思的、沉思反省的）。",
+        questions: [
+          "對等連接詞 and 連接兩個形容詞，前有 serious（嚴肅的），後文提及讓人停下腳步深思歷史創傷，哪一個形容詞表示「引人深思反省的」？",
+          "該形容詞源自 reflect（反思、深思），選項中哪一個單字符合此形態？"
+        ]
+      },
+      {
+        id: "Q62",
+        num: 62,
+        part: "Part I. 選擇題",
+        category: "blank",
+        title: "第 62 題",
+        answer: "(BC) diverse",
+        keywords: "how _____ New York can be / Each destination offers something different",
+        visual: "請對照紙本考卷第 4 頁大題 IV 總結段，how + adj. + S + can be。",
+        concept: "感嘆/問句結構與形容詞（how + adj. + S + can be；diverse 多元的、多樣化的）。",
+        questions: [
+          "總結句指出三處景點各具風貌（娛樂、自然與歷史紀念），展現出紐約這座城市是何等「多元豐富」，哪一個形容詞表示多樣的？",
+          "檢視全文主題在闡述紐約文化面向的豐富性，哪一個形容詞最能總結全篇主旨？"
+        ]
+      },
+      {
+        id: "Q63",
+        num: 63,
+        part: "Part I. 選擇題",
+        category: "read",
+        title: "第 63 題",
+        answer: "(D)",
+        keywords: "terrifying experiences / reduce their suffering / remained awake",
+        visual: "請對照紙本考卷第 4 頁第 63 題前後文，特別觀察後句出現的代名詞 \"their suffering\"，前句必須明確提到病人所承受的苦難。",
+        concept: "篇章結構與代名詞指涉（terrifying experience ➔ 病人手術中全程清醒劇痛恐懼 ➔ 醫生嘗試減輕 their suffering）。",
+        questions: [
+          "第 63 題後一句提到醫生嘗試各種方法「減輕他們的痛苦（reduce their suffering）」，那麼第 63 題應提供什麼背景？",
+          "選項中哪一句具體描述了 19 世紀以前「病人在手術中通常保持清醒，承受劇烈疼痛與恐懼」？"
+        ]
+      },
+      {
+        id: "Q64",
+        num: 64,
+        part: "Part I. 選擇題",
+        category: "read",
+        title: "第 64 題",
+        answer: "(A)",
+        keywords: "unreliable / depended on speed / amputation in less than a minute",
+        visual: "請對照紙本考卷第 4 頁第 64 題後一句，特別注意外科名醫 Liston 能在「不到一分鐘內完成截肢手術」的極速表現。",
+        concept: "篇章因果邏輯與實例銜接（傳統止痛方法不可靠 ➔ 因此外科醫生主要依賴速度縮短折磨 ➔ 名醫一分鐘完成手術）。",
+        questions: [
+          "為什麼名醫李斯頓需要練就「一分鐘完成截肢」的神速？這與當時麻醉藥物不可靠有何關聯？",
+          "哪一個選項含有 \"therefore depended on speed\" 的因果承接，能完美橋接前後兩句？"
+        ]
+      },
+      {
+        id: "Q65",
+        num: 65,
+        part: "Part I. 選擇題",
+        category: "read",
+        title: "第 65 題",
+        answer: "(B)",
+        keywords: "William Morton / ether / prevent pain / finally perform operations",
+        visual: "請對照紙本考卷第 4 頁第 65 題前後文，前文指出乙醚吸入後能讓人失去知覺並迅速推廣，後文則以 \"However\" 轉折提出乙醚的缺點。",
+        concept: "情勢突破與劃時代變革（乙醚發明讓外科醫生終於不必再強迫病人在完全清醒下受苦）。",
+        questions: [
+          "乙醚的發明讓病人免於疼痛，這對外科手術的操作方式帶來了什麼根本的改變？",
+          "哪一個選項指出「外科醫生終於可以在不強迫病人保持完全清醒的狀態下動手術」？"
+        ]
+      },
+      {
+        id: "Q66",
+        num: 66,
+        part: "Part I. 選擇題",
+        category: "read",
+        title: "第 66 題",
+        answer: "(E)",
+        keywords: "too much fatal / not given measured doses until / John Snow studying amounts",
+        visual: "請對照紙本考卷第 5 頁第 66 題前後文，前一句指出氯仿「過量可能致命（fatal）」，後一句指出 John Snow「仔細研究不同劑量（studying different amounts）」。",
+        concept: "問題與解決方案過渡（過量致命 ➔ 在學會安全控制前無法精準給藥 ➔ 醫師投入劑量研究）。",
+        questions: [
+          "既然氯仿過量會致死，後文醫生又致力於劑量研究，那麼第 66 題應當點出當時在什麼層面缺乏控制？",
+          "哪一個選項運用 \"not... until...\" 句型，點出「直到醫生學會如何安全控制劑量前，病人並未獲得精確測量的劑量」？"
+        ]
+      },
+      {
+        id: "Q67",
+        num: 67,
+        part: "Part I. 選擇題",
+        category: "read",
+        title: "第 67 題",
+        answer: "(B)",
+        keywords: "This technology / paragraph 1",
+        visual: "請對照紙本考卷第 5 頁閱讀測驗第一段最後兩句，找到 \"This technology is known as BAETA\"，向前追溯前一句的主詞與動作受詞。",
+        concept: "代名詞與指涉理解（This technology 指代前一句 \"turn it [PET plastic] into a useful substance for capturing carbon dioxide\"）。",
+        questions: [
+          "第一段倒數第二句中，哥本哈根大學研究團隊開發出了什麼新方法？",
+          "\"This technology\" 緊接在將廢棄 PET 塑膠轉化為捕碳物質的描述之後，它具體代表的科技是什麼？"
+        ]
+      },
+      {
+        id: "Q68",
+        num: 68,
+        part: "Part I. 選擇題",
+        category: "read",
+        title: "第 68 題",
+        answer: "(A)",
+        keywords: "order of the BAETA process / paragraph 2 & 3",
+        visual: "請對照紙本考卷第 5 頁第二段與第三段，循著實驗步驟標註時間順序：begin with discarded PET (e) ➔ chemically breaks molecular chains (a) ➔ mixed with special chemicals (b) ➔ adsorb CO2 (c) ➔ separated and stored underground or used again (d)。",
+        concept: "長文本科技流程排序題（Sequencing: 收集原料 ➔ 化學分解 ➔ 添加藥劑成形 ➔ 吸附氣體 ➔ 封存再利用）。",
+        questions: [
+          "根據第二段第一句，製造 BAETA 的起點（begin with）是哪一個動作？這排除了哪些選項？",
+          "塑膠長鏈被分解（breaks molecular chains）與加入特殊化學物質（mixed with special chemicals），哪一步驟先發生？"
+        ]
+      },
+      {
+        id: "Q69",
+        num: 69,
+        part: "Part I. 選擇題",
+        category: "read",
+        title: "第 69 題",
+        answer: "(C)",
+        keywords: "transcend / paragraph 4",
+        visual: "請對照紙本考卷第 5 頁第四段第一句：\"The possible benefits of BAETA transcend carbon capture.\" 並閱讀後文接續提到的減塑、降低掩埋垃圾等額外效益。",
+        concept: "語境詞義推論（transcend = go beyond the limits of 超越...的界限/範疇）。",
+        questions: [
+          "第四段接續說明 BAETA 除了捕捉碳之外，還能減少垃圾掩埋量、促進困難塑膠的回收，這代表其效益是「侷限於」還是「超越了」碳捕捉？",
+          "選項中哪一個片語的意思是「超越...的限制/範疇」？"
+        ]
+      },
+      {
+        id: "Q70",
+        num: 70,
+        part: "Part I. 選擇題",
+        category: "read",
+        title: "第 70 題",
+        answer: "(D)",
+        keywords: "NOT a benefit / paragraph 4",
+        visual: "請對照紙本考卷第 5 頁第四段最後兩句，特別檢查文中對「回收（recycle）」的敘述是鼓勵企業蒐集難回收塑膠，還是宣稱回收「不再必要（unnecessary）」。",
+        concept: "細節反向判讀（文中指出激勵回收難以處理的塑膠，而非使塑膠回收變得不再需要；選項 (D) 出現過度推論與絕對字眼 unnecessary）。",
+        questions: [
+          "文章第四段指出這項技術會 \"encourage companies to collect plastics that are currently difficult to recycle\"，這是在推動回收還是取代回收？",
+          "檢查選項 (D)：文中是否曾聲明過「這項技術可以將所有廢棄塑膠轉化，進而讓塑膠回收變得毫無必要」？"
+        ]
+      },
+
+      // Part II. 非選擇題 - VII. 文意字彙
+      {
+        id: "VII-1",
+        num: "VII-1",
+        part: "Part II. 文意字彙",
+        category: "part2_vocab",
+        title: "文意字彙 第 1 題",
+        answer: "distribution",
+        keywords: "unequal / educational resources / widening gap / d_____n",
+        visual: "請對照紙本考卷非選題第 1 題，尋找以 d 開頭、n 結尾表示「分配」的名詞。",
+        concept: "字彙拼寫與名詞語意（distribution 分配、分佈；以 d 開頭，n 結尾的名詞）。",
+        questions: [
+          "城鄉差距擴大，是因為教育資源的「分配不均」，哪一個以 d 開頭、n 結尾的單字代表分配？",
+          "動詞 distribute 轉化為名詞時，去 e 後加上哪一個名詞字尾？"
+        ]
+      },
+      {
+        id: "VII-2",
+        num: "VII-2",
+        part: "Part II. 文意字彙",
+        category: "part2_vocab",
+        title: "文意字彙 第 2 題",
+        answer: "universal",
+        keywords: "customs vary / joy, grief, love / u_____l human experience",
+        visual: "請對照紙本考卷非選題第 2 題，尋找以 u 開頭、l 結尾表示「全人類共通的」形容詞。",
+        concept: "形容詞字彙（universal 普遍的、全人類通用的；以 u 開頭，l 結尾）。",
+        questions: [
+          "雖然各國文化風俗各異，但喜怒哀樂是全人類皆能體會的「普遍」經驗，以 u 開頭、l 結尾的形容詞是什麼？",
+          "該字與宇宙（universe）同源，其形容詞拼寫為何？"
+        ]
+      },
+      {
+        id: "VII-3",
+        num: "VII-3",
+        part: "Part II. 文意字彙",
+        category: "part2_vocab",
+        title: "文意字彙 第 3 題",
+        answer: "banished",
+        keywords: "challenging authority of king / was b_____ed / forbidden to return",
+        visual: "請對照紙本考卷非選題第 3 題，被動語態 was b_____ed，被驅逐出境。",
+        concept: "動詞被動語態與過去分詞（banished 被放逐、被驅逐出境；以 b 開頭，ed 結尾）。",
+        questions: [
+          "貴族挑戰國王權力後，被「驅逐出境」且禁止返國，以 b 開頭表示放逐的動詞是什麼？",
+          "題幹為被動語態 \"was b_____ed\"，請確認該規則動詞的過去分詞拼法。"
+        ]
+      },
+      {
+        id: "VII-4",
+        num: "VII-4",
+        part: "Part II. 文意字彙",
+        category: "part2_vocab",
+        title: "文意字彙 第 4 題",
+        answer: "refusal",
+        keywords: "manager's r_____al / to acknowledge / lost confidence",
+        visual: "請對照紙本考卷非選題第 4 題，manager's 之後接所有格名詞，以 r 開頭、al 結尾。",
+        concept: "名詞字彙（refusal 拒絕；動詞 refuse 的名詞形，以 r 開頭，al 結尾）。",
+        questions: [
+          "主管「拒絕」承認問題的嚴重性導致員工失去信心，以 r 開頭、al 結尾表示拒絕的名詞是什麼？",
+          "動詞 refuse 去掉字尾 e 加上 -al 後，該名詞應如何拼寫？"
+        ]
+      },
+      {
+        id: "VII-5",
+        num: "VII-5",
+        part: "Part II. 文意字彙",
+        category: "part2_vocab",
+        title: "文意字彙 第 5 題",
+        answer: "miserable",
+        keywords: "felt m_____le / no close friends / felt lonely",
+        visual: "請對照紙本考卷非選題第 5 題，修飾孤獨悲慘感受的形容詞，以 m 開頭、le 結尾。",
+        concept: "形容詞字彙（miserable 痛苦的、悲慘沮喪的；以 m 開頭，le 結尾）。",
+        questions: [
+          "儘管事業成功，但沒有知心朋友且常感寂寞，讓他內心感到非常「悲慘/痛苦」，以 m 開頭、le 結尾的形容詞是什麼？",
+          "該單字源自名詞 misery，其以 -able 結尾的形容詞拼法為何？"
+        ]
+      },
+      {
+        id: "VII-6",
+        num: "VII-6",
+        part: "Part II. 文意字彙",
+        category: "part2_vocab",
+        title: "文意字彙 第 6 題",
+        answer: "hesitation",
+        keywords: "brief h_____n before answering / uncertain",
+        visual: "請對照紙本考卷非選題第 6 題，形容回答前的遲疑，以 h 開頭、n 結尾的名詞。",
+        concept: "名詞字彙（hesitation 猶豫、遲疑；以 h 開頭，n 結尾）。",
+        questions: [
+          "她在回答前短暫的「猶豫/遲疑」透露出她的不確定，以 h 開頭、n 結尾表示猶豫的名詞是什麼？",
+          "動詞 hesitate 去 e 加上名詞字尾 -ation，完整單字應如何拼寫？"
+        ]
+      },
+      {
+        id: "VII-7",
+        num: "VII-7",
+        part: "Part II. 文意字彙",
+        category: "part2_vocab",
+        title: "文意字彙 第 7 題",
+        answer: "promises",
+        keywords: "development of AI / p_____es to create new opportunities",
+        visual: "請對照紙本考卷非選題第 7 題，主詞為單數 development，以 p 開頭、es 結尾的動詞。",
+        concept: "動詞時態與主詞單複數一致性（promise to V 大有希望、可望...；主詞 development 為單數，加 -s）。",
+        questions: [
+          "人工智慧的快速發展「可望/展現前景」在各領域創造新機會，以 p 開頭表示「大有可為、有指望」的動詞是什麼？",
+          "本句主詞是單數抽象名詞 development，動詞 promise 在現在式中應加上什麼字尾？"
+        ]
+      },
+      {
+        id: "VII-8",
+        num: "VII-8",
+        part: "Part II. 文意字彙",
+        category: "part2_vocab",
+        title: "文意字彙 第 8 題",
+        answer: "corporation",
+        keywords: "multinational c_____n / expanded business / opening new offices",
+        visual: "請對照紙本考卷非選題第 8 題，與 multinational 連用表示跨國公司的名詞。",
+        concept: "名詞字彙搭配（multinational corporation 跨國企業/公司；以 c 開頭，n 結尾）。",
+        questions: [
+          "在多國設立辦事處並擴展業務的「跨國大型企業」，以 c 開頭、n 結尾的名詞是什麼？",
+          "請區分 company 與 corporation，以 c 開頭、-tion 結尾代表法人/跨國企業的單字如何拼寫？"
+        ]
+      },
+
+      // Part II. 非選擇題 - VIII. 翻譯填空
+      {
+        id: "VIII-9",
+        num: "VIII-9",
+        part: "Part II. 翻譯填空",
+        category: "part2_trans",
+        title: "翻譯填空 第 9 題",
+        answer: "common for",
+        keywords: "It is (9) _____ young people to relieve stress...",
+        visual: "請對照紙本考卷翻譯填空第 9 題，虛主詞句型 It is + adj. + for sb to V。",
+        concept: "虛主詞句型公式（It is + adj. + for sb to V）。",
+        questions: [
+          "中文「...是很常見的」，在虛主詞句型 \"It is + 形容詞\" 中應使用哪一個形容詞？",
+          "引導後方受格對象「對年輕人而言」，必須搭配哪一個介系詞？"
+        ]
+      },
+      {
+        id: "VIII-10",
+        num: "VIII-10",
+        part: "Part II. 翻譯填空",
+        category: "part2_trans",
+        title: "翻譯填空 第 10 題",
+        answer: "doing/engaging in outdoor activities",
+        keywords: "by (10) _____ , browsing social media, and hanging out",
+        visual: "請對照紙本考卷翻譯填空第 10 題，介系詞 by 後接動名詞，與後方 browsing 保持平行。",
+        concept: "介系詞後接動名詞與平行結構（by + V-ing，與 browsing 和 hanging out 保持平行）。",
+        questions: [
+          "介系詞 by 後方接動詞，且必須與後面的 browsing、hanging out 對等，動詞需採用何種形式？",
+          "「從事戶外活動」可以用哪一個動詞或動詞片語（如 do 或 engage in）來表達？"
+        ]
+      },
+      {
+        id: "VIII-11",
+        num: "VIII-11",
+        part: "Part II. 翻譯填空",
+        category: "part2_trans",
+        title: "翻譯填空 第 11 題",
+        answer: "not only to exercise/do sports",
+        keywords: "choose (11) _____ but also to listen to music",
+        visual: "請對照紙本考卷翻譯填空第 11 題，對等連接詞 not only... but also...。",
+        concept: "對等關聯連接詞（choose + not only to V + but also to V）。",
+        questions: [
+          "後方有 \"but also to listen\"，前面引導「不僅」的對等關聯詞是什麼？",
+          "為了與 \"to listen\" 保持不定詞結構對等，choose 後面接運動時要保留哪一個不定詞符號？"
+        ]
+      },
+      {
+        id: "VIII-12",
+        num: "VIII-12",
+        part: "Part II. 翻譯填空",
+        category: "part2_trans",
+        title: "翻譯填空 第 12 題",
+        answer: "encounter trouble/difficulty/problems",
+        keywords: "When our friends (12) encou..",
+        visual: "請對照紙本考卷翻譯填空第 12 題，提示動詞 encou..，受詞為困難。",
+        concept: "動詞名詞搭配與時態（encounter trouble/difficulty/problems；主詞 friends 為複數，動詞採現在式原形）。",
+        questions: [
+          "依據題目提示字 \"encou..\"，「遭遇/遇到」的英文動詞是什麼？",
+          "「困難」可以搭配哪些常見的名詞（如不可數的 trouble/difficulty，或複數 problems）？"
+        ]
+      },
+      {
+        id: "VIII-13",
+        num: "VIII-13",
+        part: "Part II. 翻譯填空",
+        category: "part2_trans",
+        title: "翻譯填空 第 13 題",
+        answer: "make them feel understood",
+        keywords: "can (13) make..",
+        visual: "請對照紙本考卷翻譯填空第 13 題，提示使役動詞 make..，受詞 them，後接 feel + p.p.。",
+        concept: "使役動詞與受詞補語（make + sb + feel + p.p. 讓某人感受到自己被...）。",
+        questions: [
+          "助動詞 can 後接使役動詞原形 make 與受詞 them，後接原形感官動詞 feel，那麼「被理解」要用 understand 的何種形式？",
+          "為什麼表達心聲被他人接納理解時，必須使用過去分詞 understood？"
+        ]
+      },
+      {
+        id: "VIII-14",
+        num: "VIII-14",
+        part: "Part II. 翻譯填空",
+        category: "part2_trans",
+        title: "翻譯填空 第 14 題",
+        answer: "the key to",
+        keywords: "Sincere listening is (14) _____ providing emotional support.",
+        visual: "請對照紙本考卷翻譯填空第 14 題，表示「...的關鍵」，後接動名詞 providing。",
+        concept: "片語搭配與介系詞（the key to + N/V-ing ...的關鍵）。",
+        questions: [
+          "「...的關鍵」在英文中的固定名詞片語是什麼？",
+          "此處的 \"to\" 是介系詞還是不定詞？（對照後方接動名詞 providing）"
+        ]
+      },
+      {
+        id: "VIII-15",
+        num: "VIII-15",
+        part: "Part II. 翻譯填空",
+        category: "part2_trans",
+        title: "翻譯填空 第 15 題",
+        answer: "a sense of",
+        keywords: "give them (15) _____ belonging.",
+        visual: "請對照紙本考卷翻譯填空第 15 題，修飾 belonging 構成「歸屬感」。",
+        concept: "名詞片語固定搭配（a sense of belonging 歸屬感）。",
+        questions: [
+          "英文中表達某種抽象的心理知覺（如責任感、幽默感、歸屬感），固定使用的名詞片語是什麼？",
+          "單字 belonging 前面應填入哪三個字，以完整構成「歸屬感」？"
+        ]
+      },
+      {
+        id: "VIII-16",
+        num: "VIII-16",
+        part: "Part II. 翻譯填空",
+        category: "part2_trans",
+        title: "翻譯填空 第 16 題",
+        answer: "The reason (why)",
+        keywords: "(16) The.. we must contribute to...",
+        visual: "請對照紙本考卷翻譯填空第 16 題，大寫字首 The.. 引導名詞子句作主詞。",
+        concept: "句型結構（The reason (why) + S + V ...的原因/之所以...）。",
+        questions: [
+          "依據大寫提示字 \"The..\"，表達「我們之所以...（...的原因）」的主詞名詞是什麼？",
+          "引導後方形容詞子句修飾 reason 的關係副詞是哪一個字（可省略）？"
+        ]
+      },
+      {
+        id: "VIII-17",
+        num: "VIII-17",
+        part: "Part II. 翻譯填空",
+        category: "part2_trans",
+        title: "翻譯填空 第 17 題",
+        answer: "is that",
+        keywords: "...efforts (17) _____ there is only one Earth.",
+        visual: "請對照紙本考卷翻譯填空第 17 題，主詞為 The reason，聯繫動詞與名詞子句連接詞。",
+        concept: "名詞子句作主詞補語（The reason is that + 完整子句）。",
+        questions: [
+          "前方主詞是單數的 The reason，對應的聯繫動詞（be 動詞）是什麼？",
+          "引導後方完整子句說明事實「是因為...」，應使用哪一個從屬連接詞？"
+        ]
+      },
+      {
+        id: "VIII-18",
+        num: "VIII-18",
+        part: "Part II. 翻譯填空",
+        category: "part2_trans",
+        title: "翻譯填空 第 18 題",
+        answer: "Raising/Increasing public/people's awareness",
+        keywords: "(18) _____ of environmental protection is key...",
+        visual: "請對照紙本考卷翻譯填空第 18 題，句首動名詞作主詞，提高公眾意識。",
+        concept: "動名詞當主詞與名詞片語（Raising/Increasing public/people's awareness 提高公眾意識）。",
+        questions: [
+          "本句缺少主詞，將動詞「提高/提升（raise/increase）」置於句首作主詞時應轉換為何種形式？",
+          "「大眾的意識」可以用 public 或 people's 搭配哪一個以 aware 衍生的抽象名詞？"
+        ]
+      },
+      {
+        id: "VIII-19",
+        num: "VIII-19",
+        part: "Part II. 翻譯填空",
+        category: "part2_trans",
+        title: "翻譯填空 第 19 題",
+        answer: "taken measures to",
+        keywords: "has actively (19) take.. encourage everyone",
+        visual: "請對照紙本考卷翻譯填空第 19 題，現在完成式 has 後接 take..，採取措施。",
+        concept: "現在完成式與片語動詞（has + taken measures/action to V 採取措施以...）。",
+        questions: [
+          "在助動詞 has 之後，提示動詞 take 應變化為哪一種分詞時態？",
+          "「採取措施」的英文片語是 take measures，後面接原形動詞 encourage 時需要哪一個不定詞符號？"
+        ]
+      },
+      {
+        id: "VIII-20",
+        num: "VIII-20",
+        part: "Part II. 翻譯填空",
+        category: "part2_trans",
+        title: "翻譯填空 第 20 題",
+        answer: "Compared with/to the past",
+        keywords: "(20) Com.. this innovative change has effectively reduced...",
+        visual: "請對照紙本考卷翻譯填空第 20 題，提示字 Com..，與過去相比的分詞片語。",
+        concept: "分詞片語修飾主要子句（Compared with/to + N 與...相比）。",
+        questions: [
+          "依據大寫提示字 \"Com..\"，表示「與...相較之下」的過去分詞單字是什麼？",
+          "Compared 後方常搭配哪兩個介系詞來連接比較的對象「過去（the past）」？"
+        ]
+      }
+    ];
+
+    // Current state management
+    let currentQuestionIndex = 0;
+    let currentCategory = 'all'; // 記錄當前選取的分區
+    const completedQuestions = new Set();
+    // Chat histories mapped by question ID
+    const questionChats = {};
+    // Per-question coaching state: 1: 'GUIDING', 2: 'CONGRATS_OFFER', 3: 'PRACTICE', 4: 'FINISHED'
+    const questionStages = {};
+    // Mobile active tab tracking: 'navigator' or 'chat'
+    let mobileActiveTab = 'navigator';
+
+    // Gemini API Setup
+    const GEMINI_API_KEY = ""; // Canvas runtime automatically supplies the API key when empty
+    const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${GEMINI_API_KEY}`;
+
+    // DOM Elements
+    const qNavBar = document.getElementById('questions-nav-bar');
+    const badgeQnum = document.getElementById('badge-qnum');
+    const qTitle = document.getElementById('q-title');
+    const qCatTag = document.getElementById('q-category-tag');
+    const qAnswerDisplay = document.getElementById('q-answer-display');
+    const qKeywordsContainer = document.getElementById('q-keywords-container');
+    const qVisualGuidanceBox = document.getElementById('q-visual-guidance-box');
+    const qVisualText = document.getElementById('q-visual-text');
+    const qConceptText = document.getElementById('q-concept-text');
+    const toggleStep2Btn = document.getElementById('toggle-step2-btn');
+    const step2Content = document.getElementById('step2-content');
+    const step2Icon = document.getElementById('step2-icon');
+    const qStep3Questions = document.getElementById('q-step3-questions');
+    const progressStat = document.getElementById('progress-stat');
+    const markDoneBtn = document.getElementById('mark-done-btn');
+    const quickFillBtn = document.getElementById('quick-fill-btn');
+
+    const chatContainer = document.getElementById('chat-messages-container');
+    const chatForm = document.getElementById('chat-form');
+    const studentInput = document.getElementById('student-input');
+    const sendBtn = document.getElementById('send-btn');
+    const aiStageBadge = document.getElementById('ai-stage-badge');
+    const clearChatBtn = document.getElementById('clear-chat-btn');
+
+    // Mobile specific elements
+    const panelNavigator = document.getElementById('panel-navigator');
+    const panelChat = document.getElementById('panel-chat');
+    const mobileTabNav = document.getElementById('mobile-tab-nav');
+    const mobileTabChat = document.getElementById('mobile-tab-chat');
+    const mobileChatDot = document.getElementById('mobile-chat-dot');
+    const mobileViewQuestionBtn = document.getElementById('mobile-view-question-btn');
+
+    // Instruction Modal
+    const infoModal = document.getElementById('info-modal');
+    const toggleInfoBtn = document.getElementById('toggle-info-btn');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const confirmModalBtn = document.getElementById('confirm-modal-btn');
+
+    // ================= INITIALIZATION =================
+    window.addEventListener('DOMContentLoaded', () => {
+      setCategory('all', false);
+      loadQuestion(0);
+      setupEventListeners();
+      setupMobileTabs();
+    });
+
+    // ================= CATEGORY SWITCHING & NAVIGATION =================
+    function setCategory(cat, autoLoadFirst = true) {
+      currentCategory = cat;
+
+      // 更新分區按鈕高亮外觀
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        if (btn.dataset.cat === cat) {
+          btn.className = "cat-btn px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md bg-white text-sky-700 shadow-sm border border-slate-200 shrink-0 font-bold text-xs sm:text-sm";
+        } else {
+          btn.className = "cat-btn px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md text-slate-600 hover:bg-white hover:text-sky-600 shrink-0 text-xs sm:text-sm";
+        }
+      });
+
+      // 依選定分區重新渲染題號橫條
+      renderNavButtons(currentCategory);
+
+      // 若目前選定的題目不在該分區中，自動跳轉載入該分區第一題
+      if (autoLoadFirst) {
+        const isCurrentInCat = (cat === 'all') || (EXAM_DATABASE[currentQuestionIndex]?.category === cat);
+        if (!isCurrentInCat) {
+          const targetIndex = EXAM_DATABASE.findIndex(q => cat === 'all' || q.category === cat);
+          if (targetIndex !== -1) {
+            loadQuestion(targetIndex);
+          }
+        }
+      }
+    }
+
+    // ================= MOBILE TAB MANAGEMENT =================
+    function setupMobileTabs() {
+      if (mobileTabNav && mobileTabChat) {
+        mobileTabNav.addEventListener('click', () => switchMobileTab('navigator'));
+        mobileTabChat.addEventListener('click', () => switchMobileTab('chat'));
+      }
+      if (mobileViewQuestionBtn) {
+        mobileViewQuestionBtn.addEventListener('click', () => switchMobileTab('navigator'));
+      }
+    }
+
+    function switchMobileTab(tab) {
+      mobileActiveTab = tab;
+      if (window.innerWidth >= 1024) return; // Desktop uses side-by-side flex
+
+      if (tab === 'navigator') {
+        panelNavigator.classList.remove('hidden');
+        panelChat.classList.add('hidden');
+
+        mobileTabNav.className = "flex items-center justify-center space-x-1.5 py-1.5 rounded-lg bg-white text-sky-700 font-bold border border-sky-200 shadow-xs transition";
+        mobileTabChat.className = "flex items-center justify-center space-x-1.5 py-1.5 rounded-lg bg-slate-100 text-slate-600 font-medium hover:bg-white transition relative";
+      } else {
+        panelNavigator.classList.add('hidden');
+        panelChat.classList.remove('hidden');
+
+        mobileTabChat.className = "flex items-center justify-center space-x-1.5 py-1.5 rounded-lg bg-white text-sky-700 font-bold border border-sky-200 shadow-xs transition relative";
+        mobileTabNav.className = "flex items-center justify-center space-x-1.5 py-1.5 rounded-lg bg-slate-100 text-slate-600 font-medium hover:bg-white transition";
+
+        // Hide notification dot once viewed
+        if (mobileChatDot) mobileChatDot.classList.add('hidden');
+
+        // Scroll chat to bottom & focus
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        studentInput.focus();
+      }
+    }
+
+    // ================= NAVIGATION RENDERING =================
+    function renderNavButtons(filterCategory) {
+      qNavBar.innerHTML = '';
+      EXAM_DATABASE.forEach((q, index) => {
+        if (filterCategory !== 'all' && q.category !== filterCategory) return;
+
+        const btn = document.createElement('button');
+        const isDone = completedQuestions.has(q.id);
+        const isCurrent = index === currentQuestionIndex;
+
+        let baseClasses = "q-nav-btn px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-lg shrink-0 transition flex items-center space-x-1.5 ";
+        if (isCurrent) {
+          baseClasses += "bg-sky-600 text-white shadow-sm ring-2 ring-sky-300";
+        } else if (isDone) {
+          baseClasses += "bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200";
+        } else {
+          baseClasses += "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200";
+        }
+
+        btn.className = baseClasses;
+        btn.dataset.index = index;
+
+        // Label formatting
+        let label = q.num;
+        if (typeof q.num === 'string' && q.num.startsWith('VII-')) label = `VII-${q.num.split('-')[1]}`;
+        if (typeof q.num === 'string' && q.num.startsWith('VIII-')) label = `VIII-${q.num.split('-')[1]}`;
+
+        btn.innerHTML = `
+          <span>${label}</span>
+          ${isDone ? '<i class="fa-solid fa-check text-xs text-emerald-600 ml-1"></i>' : ''}
+        `;
+
+        btn.addEventListener('click', () => {
+          loadQuestion(index);
+        });
+
+        qNavBar.appendChild(btn);
+      });
+
+      // Scroll current into view if possible
+      const activeBtn = qNavBar.querySelector('.ring-2');
+      if (activeBtn) {
+        activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    }
+
+    // ================= LOAD QUESTION =================
+    function loadQuestion(index) {
+      currentQuestionIndex = index;
+      const q = EXAM_DATABASE[index];
+
+      // Update Top Nav Styling
+      document.querySelectorAll('.q-nav-btn').forEach(btn => {
+        const bIdx = parseInt(btn.dataset.index, 10);
+        const isDone = completedQuestions.has(EXAM_DATABASE[bIdx]?.id);
+        if (bIdx === index) {
+          btn.className = "q-nav-btn px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-lg shrink-0 transition flex items-center space-x-1.5 bg-sky-600 text-white shadow-sm ring-2 ring-sky-300";
+        } else if (isDone) {
+          btn.className = "q-nav-btn px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-lg shrink-0 transition flex items-center space-x-1.5 bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200";
+        } else {
+          btn.className = "q-nav-btn px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-lg shrink-0 transition flex items-center space-x-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200";
+        }
+      });
+
+      // 將當前題號平滑置中顯示
+      const activeNavBtn = qNavBar.querySelector(`.q-nav-btn[data-index="${index}"]`);
+      if (activeNavBtn) {
+        activeNavBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+
+      // Update Left Navigator
+      badgeQnum.textContent = typeof q.num === 'string' ? q.num : `Q${q.num}`;
+      qTitle.textContent = q.title;
+      qCatTag.textContent = q.part;
+      qAnswerDisplay.textContent = q.answer;
+
+      // Mark done button state
+      if (completedQuestions.has(q.id)) {
+        markDoneBtn.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600 text-2xl"></i>';
+        markDoneBtn.title = '已標記為完成（點擊取消）';
+      } else {
+        markDoneBtn.innerHTML = '<i class="fa-regular fa-circle-check text-slate-400 text-2xl"></i>';
+        markDoneBtn.title = '標記本題為已完成';
+      }
+
+      // Step 1: Keywords
+      qKeywordsContainer.innerHTML = '';
+      const kwList = q.keywords.split('/').map(s => s.trim()).filter(Boolean);
+      kwList.forEach(kw => {
+        const span = document.createElement('span');
+        span.className = "px-3 py-1 rounded-full bg-sky-100 text-sky-800 text-xs sm:text-sm font-medium border border-sky-200";
+        span.textContent = kw;
+        qKeywordsContainer.appendChild(span);
+      });
+
+      // Step 1: Visual guidance
+      if (q.visual) {
+        qVisualGuidanceBox.classList.remove('hidden');
+        qVisualText.textContent = q.visual;
+      } else {
+        qVisualGuidanceBox.classList.add('hidden');
+      }
+
+      // Step 2: Concept (collapse by default)
+      qConceptText.textContent = q.concept;
+      step2Content.classList.add('hidden');
+      step2Icon.style.transform = 'rotate(0deg)';
+
+      // Step 3: Questions
+      qStep3Questions.innerHTML = '';
+      q.questions.forEach((questionText, qIdx) => {
+        const item = document.createElement('div');
+        item.className = "p-3 sm:p-3.5 rounded-lg bg-white border border-emerald-100 shadow-sm flex items-start space-x-2.5 sm:space-x-3 hover:border-emerald-300 transition group cursor-pointer";
+        item.innerHTML = `
+          <div class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5 group-hover:bg-emerald-600 group-hover:text-white transition">
+            ${qIdx + 1}
+          </div>
+          <div class="flex-1 text-xs sm:text-sm md:text-base text-slate-700 leading-relaxed font-medium">
+            ${questionText}
+          </div>
+          <button class="text-slate-300 group-hover:text-emerald-600 p-1 text-xs sm:text-sm shrink-0" title="帶入右側輸入框">
+            <i class="fa-solid fa-reply"></i>
+          </button>
+        `;
+        // Quick copy to input on click + auto switch to chat on mobile
+        item.addEventListener('click', () => {
+          studentInput.value = `針對問句 ${qIdx + 1}（${questionText}）：\n我的想法是：`;
+          if (window.innerWidth < 1024) {
+            switchMobileTab('chat');
+          } else {
+            studentInput.focus();
+          }
+        });
+        qStep3Questions.appendChild(item);
+      });
+
+      // Update quick fill footer button
+      quickFillBtn.onclick = () => {
+        studentInput.value = `針對問句 1（${q.questions[0]}）：\n我認為：`;
+        if (window.innerWidth < 1024) {
+          switchMobileTab('chat');
+        } else {
+          studentInput.focus();
+        }
+      };
+
+      // Update Right Panel: Chat state for this question
+      initOrRestoreChat(q);
+    }
+
+    // ================= CHAT LOGIC & GEMINI INTEGRATION =================
+    function initOrRestoreChat(question) {
+      if (!questionChats[question.id]) {
+        // First time entering this question
+        questionChats[question.id] = [];
+        questionStages[question.id] = 1; // Stage 1: 思維引導
+
+        // Generate warm greeting
+        const greeting = `同學你好！我們現在一起來訂正【${question.title}】✨\n\n請先對照桌上的紙本考卷與左側的「破題關鍵字」，接著嘗試回答第三步的拆解問句：\n👉 1. ${question.questions[0]}\n👉 2. ${question.questions[1]}\n\n別擔心答案不完整，用你自己的話在下方說說看你的觀察與想法吧！`;
+        appendMessage(question.id, 'assistant', greeting);
+      }
+
+      updateStageBadge(questionStages[question.id]);
+      renderChatMessages(question.id);
+    }
+
+    function updateStageBadge(stage) {
+      switch (stage) {
+        case 1:
+          aiStageBadge.className = "px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-700";
+          aiStageBadge.innerHTML = '<i class="fa-solid fa-compass mr-1"></i> 階段一・思維引導中';
+          break;
+        case 2:
+          aiStageBadge.className = "px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 animate-pulse";
+          aiStageBadge.innerHTML = '<i class="fa-solid fa-check mr-1"></i> 階段二・通關結算';
+          break;
+        case 3:
+          aiStageBadge.className = "px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-700";
+          aiStageBadge.innerHTML = '<i class="fa-solid fa-pencil mr-1"></i> 階段三・類題挑戰中';
+          break;
+        case 4:
+          aiStageBadge.className = "px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700";
+          aiStageBadge.innerHTML = '<i class="fa-solid fa-flag-checkered mr-1"></i> 階段四・本題大功告成';
+          break;
+      }
+    }
+
+    function appendMessage(qId, role, content) {
+      if (!questionChats[qId]) questionChats[qId] = [];
+      questionChats[qId].push({ role, content });
+      if (qId === EXAM_DATABASE[currentQuestionIndex].id) {
+        renderChatMessages(qId);
+      }
+    }
+
+    function renderChatMessages(qId) {
+      chatContainer.innerHTML = '';
+      const messages = questionChats[qId] || [];
+
+      messages.forEach(msg => {
+        const isUser = msg.role === 'user';
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `flex items-start space-x-2.5 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`;
+
+        // Avatar
+        const avatar = document.createElement('div');
+        avatar.className = isUser
+          ? "w-8 h-8 rounded-full bg-slate-700 text-white flex items-center justify-center text-sm shrink-0 font-bold shadow-sm"
+          : "w-8 h-8 rounded-full bg-gradient-to-tr from-sky-600 to-indigo-600 text-white flex items-center justify-center text-sm shrink-0 shadow-sm";
+        avatar.innerHTML = isUser ? '<i class="fa-solid fa-user"></i>' : '<i class="fa-solid fa-robot"></i>';
+
+        // Content Bubble
+        const bubble = document.createElement('div');
+        bubble.className = isUser
+          ? "max-w-[85%] bg-sky-600 text-white p-3.5 rounded-2xl rounded-tr-sm text-sm sm:text-base leading-relaxed shadow-sm whitespace-pre-wrap font-normal"
+          : "max-w-[85%] bg-white border border-slate-200 text-slate-800 p-4 rounded-2xl rounded-tl-sm text-sm sm:text-base leading-relaxed shadow-sm whitespace-pre-wrap";
+        bubble.textContent = msg.content;
+
+        msgDiv.appendChild(avatar);
+        msgDiv.appendChild(bubble);
+        chatContainer.appendChild(msgDiv);
+      });
+
+      // Scroll to bottom
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    // ================= SEND MESSAGE & GEMINI CALL =================
+    async function handleSendMessage(text) {
+      const q = EXAM_DATABASE[currentQuestionIndex];
+      const trimmed = (text !== undefined ? text : studentInput.value).trim();
+      if (!trimmed) return;
+
+      // 1. Add User message to chat
+      appendMessage(q.id, 'user', trimmed);
+      studentInput.value = '';
+      studentInput.style.height = 'auto';
+
+      // 2. Add temporary typing indicator
+      const typingIndicator = document.createElement('div');
+      typingIndicator.id = 'ai-typing-indicator';
+      typingIndicator.className = 'flex items-center space-x-2 text-slate-500 text-sm py-2 px-1';
+      typingIndicator.innerHTML = `
+        <i class="fa-solid fa-circle-notch fa-spin text-sky-600"></i>
+        <span>AI 教練正在思考引導回饋...</span>
+      `;
+      chatContainer.appendChild(typingIndicator);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+
+      // Disable inputs
+      sendBtn.disabled = true;
+      sendBtn.classList.add('opacity-50');
+
+      try {
+        const currentStage = questionStages[q.id] || 1;
+        const aiResponseText = await callGeminiCoach(q, trimmed, currentStage);
+
+        // Remove typing indicator
+        const indicator = document.getElementById('ai-typing-indicator');
+        if (indicator) indicator.remove();
+
+        // Append AI response
+        appendMessage(q.id, 'assistant', aiResponseText);
+
+        // Update internal stage based on conversational markers
+        updateCoachingFlow(q, trimmed, aiResponseText);
+
+      } catch (err) {
+        console.error("Gemini API Error:", err);
+        const indicator = document.getElementById('ai-typing-indicator');
+        if (indicator) indicator.remove();
+
+        // Intelligent offline heuristic fallback if API fails
+        const fallbackText = getHeuristicFallbackResponse(q, trimmed);
+        appendMessage(q.id, 'assistant', fallbackText);
+        updateCoachingFlow(q, trimmed, fallbackText);
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.classList.remove('opacity-50');
+      }
+    }
+
+    // ================= GEMINI PROMPT & FOUR-STAGE LOGIC =================
+    async function callGeminiCoach(q, studentMsg, stage) {
+      const systemInstruction = `
+你是大同高中高二英文科的專屬 AI 啟發式訂正教練。
+你的任務是引導學生針對「115學年度第一學期高二英文科第一次期中考」進行「三步引導自主訂正」。
+
+【當前訂正題目數據】：
+- 題號：${q.title} (${q.part})
+- 正確答案：${q.answer}
+- 破題關鍵字：${q.keywords}
+- 看圖/審題指引：${q.visual}
+- 核心概念與公式：${q.concept}
+- 第三步拆解問句：
+  1. ${q.questions[0]}
+  2. ${q.questions[1]}
+
+【當前內部階段進程】：階段 ${stage}
+AI 助教必須嚴格遵循以下四階段執行守則：
+
+1. 階段一【思維引導】：
+   - 學生回答第三步問句或提出推測時，給予針對性反饋與鼓勵。
+   - 【絕對嚴格禁止】：在學生自己推理得出正確答案之前，絕對不可直接說出答案選項字母（如 (A)、(B)、(C)、(D)）或非選填空正確單字！
+   - 引導學生比對考卷關鍵字、文法邏輯、主被動或句意反差，逐步推導出正確結論。
+
+2. 階段二【通關結算與類題邀約】：
+   - 當學生在對話中成功推導出正確答案時，熱情讚美並給予 1 句精煉觀念總結。
+   - 接著必須原汁原味主動詢問此問題：「觀念打通了！要不要挑戰一題『平行類似題』確認自己真的徹底搞懂了？（請回答：好 / 下一題）」
+
+3. 階段三【現場即時類題出題與批改】：
+   - 若學生回答「好 / 要 / 來吧 / 挑戰」：依據本題的核心概念與題型，現場出一道「難度相當、觀念相同但情境/數字改變」的純文字類似題（附 4 個選項或克漏字），請學生作答。
+   - 學生回答類題後，立即為其批改並給予精準解析。
+
+4. 階段四【收尾導流】：
+   - 當類題批改完成後（或學生在階段二選擇「下一題」），主動送出此句收尾：「這題訂正大功告成！請在左側點選下一題繼續訂正。」
+
+請用親切熱情、繁體中文的高中家教語氣回答，結構清晰，善用 emoji。
+`;
+
+      // Build conversation payload with history
+      const history = (questionChats[q.id] || []).map(m => ({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.content }]
+      }));
+
+      // Add current user turn
+      history.push({
+        role: 'user',
+        parts: [{ text: studentMsg }]
+      });
+
+      const payload = {
+        contents: history,
+        systemInstruction: {
+          parts: [{ text: systemInstruction }]
+        },
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 800
+        }
+      };
+
+      const response = await fetch(GEMINI_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const candidate = data.candidates?.[0];
+      const reply = candidate?.content?.parts?.[0]?.text;
+      if (!reply) throw new Error("No response from Gemini");
+
+      return reply;
+    }
+
+    // Heuristic stage transition handler
+    function updateCoachingFlow(q, userText, aiText) {
+      let currentStage = questionStages[q.id] || 1;
+
+      // Check if AI invited for parallel question
+      if (aiText.includes("平行類似題") || aiText.includes("挑戰一題") || aiText.includes("要不要挑戰")) {
+        currentStage = 2; // Congrats & Offer
+      }
+      // Check if user agreed to challenge or AI just generated a practice question
+      else if (currentStage === 2 && (userText.includes("好") || userText.includes("要") || userText.includes("來") || userText.includes("挑戰"))) {
+        currentStage = 3; // Practice
+      }
+      // Check if user said next question or completed practice
+      else if (userText.includes("下一題") || aiText.includes("大功告成") || aiText.includes("點選下一題")) {
+        currentStage = 4; // Finished
+        markQuestionCompleted(q.id);
+      }
+
+      questionStages[q.id] = currentStage;
+      updateStageBadge(currentStage);
+    }
+
+    // Offline heuristic fallback when API is unreachable
+    function getHeuristicFallbackResponse(q, userText) {
+      const stage = questionStages[q.id] || 1;
+      const lower = userText.toLowerCase();
+
+      if (stage === 1) {
+        // Did student guess or mention correct elements?
+        const ansClean = q.answer.toLowerCase();
+        if (lower.includes(ansClean) || lower.includes("答案是") || lower.includes("應該是")) {
+          questionStages[q.id] = 2;
+          return `太棒了！你的觀察非常敏銳且推導完全正確👏！\n\n📌【核心觀念總結】：${q.concept}\n\n觀念打通了！要不要挑戰一題『平行類似題』確認自己真的徹底搞懂了？（請回答：好 / 下一題）`;
+        } else {
+          return `很好！你有試著抓住重點。請再特別對照考卷上的關鍵線索：【${q.keywords}】。\n\n再思考一下：${q.questions[0]}\n試著把這個線索與選項做對比，哪一個最符合？加油，你已經很接近了！`;
+        }
+      } else if (stage === 2) {
+        if (userText.includes("好") || userText.includes("要") || userText.includes("挑戰")) {
+          questionStages[q.id] = 3;
+          return `很好！氣勢十足！請看這道平行檢測題：\n\n【類題練習】：\n"The research team used satellite imaging to _____ the movement of glaciers across the arctic region."\n(A) demolish\n(B) measure\n(C) surrender\n(D) neglect\n\n請回答你的選項與原因：`;
+        } else {
+          questionStages[q.id] = 4;
+          return `沒問題！這題訂正大功告成！請在左側點選下一題繼續訂正。`;
+        }
+      } else if (stage === 3) {
+        questionStages[q.id] = 4;
+        return `答得漂亮！完全正確！因為句子是在描述利用儀器「測量、記錄」冰河的位移，正好對應本題的核心測量概念！\n\n這題訂正大功告成！請在左側點選下一題繼續訂正。`;
+      } else {
+        return `這題已經澈底搞懂囉！請點選上方選單的下一題繼續挑戰！`;
+      }
+    }
+
+    // ================= PROGRESS & COMPLETION =================
+    function markQuestionCompleted(qId) {
+      completedQuestions.add(qId);
+      updateProgressUI();
+    }
+
+    function toggleQuestionCompleted(qId) {
+      if (completedQuestions.has(qId)) {
+        completedQuestions.delete(qId);
+      } else {
+        completedQuestions.add(qId);
+      }
+      updateProgressUI();
+      loadQuestion(currentQuestionIndex);
+    }
+
+    function updateProgressUI() {
+      progressStat.textContent = `${completedQuestions.size} / ${EXAM_DATABASE.length}`;
+      renderNavButtons(currentCategory);
+    }
+
+    // ================= EVENT LISTENERS =================
+    function setupEventListeners() {
+      // 分區按鈕點擊事件：切換分區、過濾題號並跳轉至該大題第一題
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          setCategory(btn.dataset.cat, true);
+        });
+      });
+
+      // Chat Form submission & Send button click (fixes send button non-responsive bug)
+      chatForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        handleSendMessage(studentInput.value);
+      });
+
+      sendBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        handleSendMessage(studentInput.value);
+      });
+
+      // Step 2 Accordion toggle
+      toggleStep2Btn.addEventListener('click', () => {
+        const isHidden = step2Content.classList.contains('hidden');
+        if (isHidden) {
+          step2Content.classList.remove('hidden');
+          step2Icon.style.transform = 'rotate(180deg)';
+        } else {
+          step2Content.classList.add('hidden');
+          step2Icon.style.transform = 'rotate(0deg)';
+        }
+      });
+
+      // Mark done button
+      markDoneBtn.addEventListener('click', () => {
+        const q = EXAM_DATABASE[currentQuestionIndex];
+        toggleQuestionCompleted(q.id);
+      });
+
+      // Auto-grow textarea & Enter key support (with mobile safe scroll)
+      studentInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          handleSendMessage(studentInput.value);
+        }
+      });
+
+      // Handle mobile keyboard focus without breaking viewport
+      studentInput.addEventListener('focus', () => {
+        setTimeout(() => {
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+        }, 300);
+      });
+
+      // Window resize handler: restore panels if returning to desktop
+      window.addEventListener('resize', () => {
+        if (window.innerWidth >= 1024) {
+          panelNavigator.classList.remove('hidden');
+          panelChat.classList.remove('hidden');
+        } else {
+          switchMobileTab(mobileActiveTab);
+        }
+      });
+
+      // Quick reply pills
+      document.querySelectorAll('.quick-reply-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const text = btn.dataset.text;
+          studentInput.value = text;
+          studentInput.focus();
+        });
+      });
+
+      // Reset chat button
+      clearChatBtn.addEventListener('click', () => {
+        const q = EXAM_DATABASE[currentQuestionIndex];
+        delete questionChats[q.id];
+        delete questionStages[q.id];
+        initOrRestoreChat(q);
+      });
+
+      // Modal triggers
+      toggleInfoBtn.addEventListener('click', () => infoModal.classList.remove('hidden'));
+      closeModalBtn.addEventListener('click', () => infoModal.classList.add('hidden'));
+      confirmModalBtn.addEventListener('click', () => infoModal.classList.add('hidden'));
+      infoModal.addEventListener('click', (e) => {
+        if (e.target === infoModal) infoModal.classList.add('hidden');
+      });
+    }
+  </script>
+</body>
+</html>
